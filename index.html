@@ -693,7 +693,7 @@
       {
         day: 5, tier: 1, tierName: "Tier 1: Pointers & Raw Memory", title: "Double Pointers (int **pp) & Mutating Caller Pointers", time: "25-30m", xp: 100, file: "day05_double_pointers.c",
         concept: `<p>A double pointer (<code>int **pp</code>) is a pointer that stores the address of another pointer. Just as an <code>int *</code> is required to mutate an <code>int</code> inside caller memory, an <code>int **</code> is required to mutate an <code>int *</code> (e.g. changing which buffer a pointer points to, or allocating heap memory inside a helper function).</p>`,
-        codeSnippet: `#include <stdio.h>\n\nvoid allocate_buffer_wrong(int *ptr) {\n    static font_val = 100;\n    ptr = &font_val; // Mutates local copy of pointer!\n}\n\nvoid allocate_buffer_correct(int **pptr) {\n    static int target = 777;\n    if (pptr != NULL) {\n        *pptr = &target; // Mutates original pointer in caller stack frame\n    }\n}\n\nint main(void) {\n    int *my_ptr = NULL;\n    allocate_buffer_wrong(my_ptr);\n    printf("After wrong: %p\\n", (void *)my_ptr); // Still NULL!\n    \n    allocate_buffer_correct(&my_ptr);\n    printf("After correct: %p -> Val: %d\\n", (void *)my_ptr, *my_ptr);\n    return 0;\n}`,
+        codeSnippet: `#include <stdio.h>\n\nvoid allocate_buffer_wrong(int *ptr) {\n    static int font_val = 100;\n    ptr = &font_val; // Mutates local copy of pointer!\n}\n\nvoid allocate_buffer_correct(int **pptr) {\n    static int target = 777;\n    if (pptr != NULL) {\n        *pptr = &target; // Mutates original pointer in caller stack frame\n    }\n}\n\nint main(void) {\n    int *my_ptr = NULL;\n    allocate_buffer_wrong(my_ptr);\n    printf("After wrong: %p\\n", (void *)my_ptr); // Still NULL!\n    \n    allocate_buffer_correct(&my_ptr);\n    printf("After correct: %p -> Val: %d\\n", (void *)my_ptr, *my_ptr);\n    return 0;\n}`,
         ubAlert: "Passing &ptr (address of a pointer) requires an int ** parameter. Passing ptr directly to a function that tries to assign memory to it will lose the reference on return.",
         quiz: [
           { q: "Why do we use double pointers (int **)?", opts: ["To double the pointer size", "To mutate an int * pointer variable inside caller memory", "To create 2D arrays only", "To speed up compilation"], ans: 1, exp: "Double pointers allow a function to modify the address stored in a caller's pointer variable." },
@@ -1041,7 +1041,7 @@
       {
         day: 25, tier: 5, tierName: "Tier 5: Bits & Network Protocols", title: "Building a Hex + ASCII Memory Dumper (hexdump)", time: "25-30m", xp: 100, file: "day25_hexdump_tool.c",
         concept: `<p>Hex dumpers are mandatory tools for reverse engineers and network security analysts. They inspect raw binary memory by rendering offset addresses, 16 hex bytes per line, and printable ASCII character equivalents side-by-side.</p>`,
-        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <ctype.h>\n\nvoid hexdump(const void *ptr, size_t len) {\n    const uint8_t *buf = (const uint8_t *)ptr;\n    for (size_t i = 0; i < len; i += 16) {\n        printf("%08ZX  ", i); // Offset address\n        for (size_t j = 0; j < 16; j++) {\n            if (i + j < len) printf("%02X ", buf[i + j]);\n            else printf("   ");\n        }\n        printf(" |");\n        for (size_t j = 0; j < 16 && (i + j) < len; j++) {\n            uint8_t c = buf[i + j];\n            printf("%c", isprint(c) ? c : '.');\n        }\n        printf("|\\n");\n    }\n}\n\nint main(void) {\n    char secret_payload[] = "C_FORGE: Low-Level Systems & NetProg!";\n    hexdump(secret_payload, sizeof(secret_payload));\n    return 0;\n}`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <ctype.h>\n\nvoid hexdump(const void *ptr, size_t len) {\n    const uint8_t *buf = (const uint8_t *)ptr;\n    for (size_t i = 0; i < len; i += 16) {\n        printf("%08zX  ", i); // Offset address\n        for (size_t j = 0; j < 16; j++) {\n            if (i + j < len) printf("%02X ", buf[i + j]);\n            else printf("   ");\n        }\n        printf(" |");\n        for (size_t j = 0; j < 16 && (i + j) < len; j++) {\n            uint8_t c = buf[i + j];\n            printf("%c", isprint(c) ? c : '.');\n        }\n        printf("|\\n");\n    }\n}\n\nint main(void) {\n    char secret_payload[] = "C_FORGE: Low-Level Systems & NetProg!";\n    hexdump(secret_payload, sizeof(secret_payload));\n    return 0;\n}`,
         ubAlert: "Passing non-printable characters directly to printf('%c') can corrupt terminal state or execute ANSI escape sequence traps.",
         quiz: [
           { q: "What function from <ctype.h> checks if a byte is a printable ASCII character?", opts: ["isalpha()", "isprint()", "isascii()", "isdigit()"], ans: 1, exp: "isprint() returns true for printable characters (ASCII 32 to 126)." },
@@ -1075,7 +1075,7 @@
         expectedOut: "[SYS LOG] Multi-file engine initialized."
       },
       {
-        day: 27, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "Command-Line Arguments (argc, argv), Exit Codes & getopt", time: "27", xp: 100, file: "day27_cli_getopt.c",
+        day: 27, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "Command-Line Arguments (argc, argv), Exit Codes & getopt", time: "25-30m", xp: 100, file: "day27_cli_getopt.c",
         concept: `<p>CLI tools receive arguments via <code>int main(int argc, char *argv[])</code>. We parse command-line flags cleanly using POSIX <code>getopt()</code> from <code>&lt;unistd.h&gt;</code>, returning standard exit codes (<code>EXIT_SUCCESS</code> or <code>EXIT_FAILURE</code>).</p>`,
         codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n\nint main(int argc, char *argv[]) {\n    int opt;\n    char *port = "8080";\n    \n    while ((opt = getopt(argc, argv, "p:h")) != -1) {\n        switch (opt) {\n            case 'p': port = optarg; break;\n            case 'h':\n            default:\n                printf("Usage: %s [-p port]\\n", argv[0]);\n                return EXIT_SUCCESS;\n        }\n    }\n    printf("Target server starting on port: %s\\n", port);\n    return EXIT_SUCCESS;\n}`,
         ubAlert: "Accessing argv[i] when i >= argc causes out-of-bounds array access UB.",
@@ -1522,23 +1522,23 @@
 
     /* Syntax Highlighter */
     function highlightCSyntax(code) {
-      let escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      
-      // Comments
-      escaped = escaped.replace(/(\/\/[^\n]*)/g, '<span class="c-comment">$1</span>');
-      // Preprocessor
-      escaped = escaped.replace(/(#include\s+&lt;[^&]+&gt;|#define\s+\w+|#ifndef\s+\w+|#endif)/g, '<span class="c-pre">$1</span>');
-      // Keywords
-      escaped = escaped.replace(/\b(return|if|else|for|while|switch|case|break|typedef|struct|union|enum|const|static)\b/g, '<span class="c-kw">$1</span>');
-      // Types
-      escaped = escaped.replace(/\b(int|char|void|size_t|uint8_t|uint16_t|uint32_t|uint64_t|float|double|long|Player|Entity|Vector2D|NetworkEvent|EventType)\b/g, '<span class="c-type">$1</span>');
-      // Strings
-      escaped = escaped.replace(/("[^"]*")/g, '<span class="c-str">$1</span>');
-      // Numbers
-      escaped = escaped.replace(/\b(\d+|0x[0-9A-Fa-f]+)\b/g, '<span class="c-num">$1</span>');
+      const escaped = code
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-      return escaped;
-    }
+      const tokenRegex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*")|(#(?:include\s+(?:&lt;[^&]+&gt;|"[^"]*")|define\s+\w+|ifndef\s+\w+|endif))|\b(return|if|else|for|while|switch|case|break|typedef|struct|union|enum|const|static|default)\b|\b(int|char|void|size_t|ssize_t|uint8_t|uint16_t|uint32_t|uint64_t|float|double|long|Player|Entity|Vector2D|NetworkEvent|EventType|CommandHandler)\b|\b(0x[0-9A-Fa-f]+|\d+U?)\b/g;
+
+      return escaped.replace(tokenRegex, (match, comment, str, pre, kw, type, num) => {
+        if (comment) return `<span class="c-comment">${comment}</span>`;
+        if (str) return `<span class="c-str">${str}</span>`;
+        if (pre) return `<span class="c-pre">${pre}</span>`;
+        if (kw) return `<span class="c-kw">${kw}</span>`;
+        if (type) return `<span class="c-type">${type}</span>`;
+        if (num) return `<span class="c-num">${num}</span>`;
+        return match;
+      });
+  }
 
     /* ==========================================================================
        9. QUIZ DIAGNOSTICS & VERIFICATION
@@ -1811,11 +1811,11 @@
       renderBitLab();
     }
 
-    function toggleSingleBit(bitIndex) {
-      currentBitValue = currentBitValue ^ (1U << bitIndex);
+   function toggleSingleBit(bitIndex) {
+      currentBitValue = (currentBitValue ^ (1 << bitIndex)) >>> 0;
       document.getElementById('bit-input-val').value = currentBitValue;
       renderBitLab();
-    }
+  }
 
     function renderBitLab() {
       const container = document.getElementById('bit-grid-container');
