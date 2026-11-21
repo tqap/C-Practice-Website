@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C_FORGE // Low-Level Systems & NetProg Mastery</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#090d14',
+            surface: {
+              DEFAULT: '#111827',
+              border: '#1f2937',
+              hover: '#1f293d',
+              card: '#0f172a'
+            },
+            forge: {
+              emerald: '#10b981',
+              cyan: '#06b6d4',
+              amber: '#f59e0b',
+              crimson: '#ef4444',
+              purple: '#8b5cf6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', 'Courier New', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d14; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #374151; }
+    
+    .glow-cyan { box-shadow: 0 0 15px rgba(6, 182, 212, 0.25); }
+    .glow-emerald { box-shadow: 0 0 15px rgba(16, 185, 129, 0.25); }
+    .glow-amber { box-shadow: 0 0 15px rgba(245, 158, 11, 0.25); }
+    
+    pre code {
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    
+    /* Code Highlighting classes */
+    .c-kw { color: #8b5cf6; font-weight: 600; } /* keywords */
+    .c-type { color: #06b6d4; font-weight: 600; } /* types */
+    .c-num { color: #f59e0b; } /* numbers */
+    .c-str { color: #10b981; } /* strings */
+    .c-comment { color: #6b7280; font-style: italic; } /* comments */
+    .c-pre { color: #ec4899; font-weight: 600; } /* preprocessor */
+    .c-func { color: #3b82f6; font-weight: 600; } /* functions */
+  </style>
+</head>
+<body class="bg-obsidian text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-forge-cyan selection:text-black">
+
+  <!-- TOP PERSISTENT UTILITY BAR -->
+  <header class="bg-surface border-b border-surface-border sticky top-0 z-50 px-4 py-2.5 shadow-xl">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      
+      <!-- Logo & Rank -->
+      <div class="flex items-center space-x-3">
+        <div class="bg-gradient-to-br from-forge-cyan to-blue-600 p-2 rounded-lg text-black font-black text-xl tracking-wider shadow-lg">
+          C_
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-bold text-base tracking-wide text-white">C_FORGE</h1>
+            <span class="text-xs bg-cyan-950 text-forge-cyan border border-forge-cyan/30 px-2 py-0.5 rounded font-mono font-semibold uppercase tracking-wider" id="player-rank">Stack Novice</span>
+          </div>
+          <p class="text-xs text-gray-400 font-mono">Low-Level Systems & NetProg Mastery</p>
+        </div>
+      </div>
+
+      <!-- XP Bar & Daily Streak -->
+      <div class="flex items-center space-x-6">
+        <!-- XP Progress -->
+        <div class="w-48 sm:w-64">
+          <div class="flex justify-between text-xs font-mono mb-1">
+            <span class="text-gray-400">XP: <strong text-white id="xp-val">0</strong> / <span id="xp-next">500</span></span>
+            <span class="text-forge-cyan font-bold" id="completion-pct">0% Complete</span>
+          </div>
+          <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden border border-gray-700/50">
+            <div id="xp-bar-fill" class="bg-gradient-to-r from-forge-cyan to-forge-emerald h-full transition-all duration-500 w-0"></div>
+          </div>
+        </div>
+
+        <!-- Streak Badge -->
+        <div class="flex items-center space-x-1.5 bg-gray-900 border border-amber-500/30 px-3 py-1 rounded-lg text-xs font-mono text-amber-400">
+          <svg class="w-4 h-4 text-amber-500 fill-current" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.431.67-.841 1.488-1.077 2.227-.37 1.155-.41 2.228-.27 3.321.14 1.092.54 2.115 1.12 3.012a1 1 0 001.69-.022 9.043 9.043 0 001.32-2.868c.27-1.002.32-2.02.16-3.003a8.94 8.94 0 00-.87-2.668zm-5.46 4.3a1 1 0 00-1.53-.418c-.46.353-.8.82-1.05 1.326-.52 1.05-.82 2.26-.7 3.47.12 1.21.6 2.37 1.35 3.35a1 1 0 001.6-.134 8.97 8.97 0 001.19-3.033c.18-.94.13-1.89-.14-2.8a8.88 8.88 0 00-.72-1.761z" clip-rule="evenodd"></path>
+          </svg>
+          <span>STREAK: <strong id="streak-val" class="text-white">1</strong> DAY</span>
+        </div>
+      </div>
+
+      <!-- Session Timer Widget -->
+      <div class="flex items-center bg-gray-900 border border-gray-800 rounded-lg p-1.5 space-x-2">
+        <div class="text-right px-2">
+          <div class="text-[10px] text-gray-400 uppercase font-mono tracking-wider flex items-center justify-end space-x-1">
+            <span class="inline-block w-1.5 h-1.5 rounded-full bg-forge-emerald animate-pulse" id="timer-dot"></span>
+            <span id="timer-phase-lbl">20m CODE SET</span>
+          </div>
+          <div class="font-mono text-base font-bold text-forge-cyan tracking-wider" id="timer-display">20:00</div>
+        </div>
+        <div class="flex space-x-1">
+          <button id="btn-timer-toggle" onclick="toggleTimer()" class="bg-forge-cyan/20 hover:bg-forge-cyan/30 text-forge-cyan p-1.5 rounded border border-forge-cyan/40 transition-colors" title="Start/Pause Timer">
+            <svg id="icon-play" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg id="icon-pause" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </button>
+          <button onclick="resetTimer()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 p-1.5 rounded border border-gray-700 transition-colors" title="Reset Timer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Backup & Options -->
+      <div class="flex items-center space-x-2">
+        <button onclick="openBackupModal()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-xs px-2.5 py-1.5 rounded-md font-mono text-gray-300 flex items-center space-x-1.5 transition-colors">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+          <span>Data / Sync</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS BAR -->
+  <nav class="bg-gray-900 border-b border-surface-border px-4 py-1.5">
+    <div class="max-w-7xl mx-auto flex items-center space-x-2 overflow-x-auto text-sm font-medium">
+      <button onclick="switchTab('workspace')" id="tab-btn-workspace" class="nav-tab active-tab text-forge-cyan border-b-2 border-forge-cyan px-4 py-2 flex items-center space-x-2 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        <span>Quest Workspace</span>
+      </button>
+      <button onclick="switchTab('roadmap')" id="tab-btn-roadmap" class="nav-tab text-gray-400 hover:text-gray-200 border-b-2 border-transparent px-4 py-2 flex items-center space-x-2 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+        <span>Roadmap & Boss Raids</span>
+      </button>
+      <button onclick="switchTab('labs')" id="tab-btn-labs" class="nav-tab text-gray-400 hover:text-gray-200 border-b-2 border-transparent px-4 py-2 flex items-center space-x-2 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.595 15.12a2 2 0 00-1.8 1.107l-.8 1.6A2 2 0 004.795 20.5h14.41a2 2 0 001.8-1.673l-.577-3.4z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l-3-3m0 0l-3 3m3-3v12"></path></svg>
+        <span>Interactive Visual Labs</span>
+      </button>
+      <button onclick="switchTab('armory')" id="tab-btn-armory" class="nav-tab text-gray-400 hover:text-gray-200 border-b-2 border-transparent px-4 py-2 flex items-center space-x-2 transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+        <span>Systems Armory</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 flex gap-4 overflow-hidden">
+
+    <!-- COLLAPSIBLE CURRICULUM SIDEBAR (Visible in Workspace View) -->
+    <aside id="sidebar-curriculum" class="w-80 flex-shrink-0 bg-surface border border-surface-border rounded-xl flex flex-col overflow-hidden transition-all duration-300">
+      <!-- Sidebar Header -->
+      <div class="p-3 bg-gray-900 border-b border-surface-border flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-forge-cyan"></span>
+          <h3 class="font-bold text-xs uppercase tracking-wider text-gray-300 font-mono">Curriculum Matrix</h3>
+        </div>
+        <span class="text-[10px] font-mono bg-gray-800 text-gray-400 px-2 py-0.5 rounded">30 DAYS + 4 RAIDS</span>
+      </div>
+
+      <!-- Quick Resume Button -->
+      <div class="p-3 border-b border-surface-border bg-gradient-to-r from-cyan-950/40 to-blue-950/40">
+        <button onclick="resumeActiveQuest()" class="w-full bg-gradient-to-r from-forge-cyan to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-xs py-2 px-3 rounded-lg shadow-md flex items-center justify-center space-x-2 transition-all">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+          <span id="btn-resume-lbl">RESUME DAY 1 QUEST</span>
+        </button>
+      </div>
+
+      <!-- Search / Filter -->
+      <div class="p-2 border-b border-surface-border">
+        <input type="text" id="curriculum-search" onkeyup="filterCurriculum()" placeholder="Search concepts, tools, days..." class="w-full bg-gray-950 border border-gray-800 rounded px-2.5 py-1.5 text-xs text-gray-200 placeholder-gray-500 focus:outline-none focus:border-forge-cyan font-mono">
+      </div>
+
+      <!-- Days List -->
+      <div id="curriculum-tree" class="flex-1 overflow-y-auto p-2 space-y-3 text-xs font-mono">
+        <!-- Rendered via JS -->
+      </div>
+    </aside>
+
+    <!-- VIEW TAB 1: QUEST WORKSPACE -->
+    <section id="view-workspace" class="flex-1 flex flex-col space-y-4 overflow-y-auto pr-1">
+      <!-- Active Quest Header Banner -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div class="absolute top-0 right-0 transform translate-x-6 -translate-y-6 w-32 h-32 bg-forge-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+        
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <div class="flex items-center space-x-2">
+            <span id="qw-tier-badge" class="bg-cyan-950 text-forge-cyan border border-forge-cyan/30 px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold uppercase">Tier 1 // Pointers</span>
+            <span id="qw-day-badge" class="bg-gray-800 text-gray-300 border border-gray-700 px-2.5 py-0.5 rounded text-[11px] font-mono">DAY 01 OF 30</span>
+          </div>
+          <div class="flex items-center space-x-4 text-xs font-mono text-gray-400">
+            <span>Est. Time: <strong id="qw-time" class="text-gray-200">25-30m</strong></span>
+            <span>XP: <strong id="qw-xp" class="text-forge-emerald">+100 XP</strong></span>
+            <span class="text-gray-500">|</span>
+            <span class="text-forge-cyan" id="qw-file">day01_ram_pointers.c</span>
+          </div>
+        </div>
+
+        <h2 id="qw-title" class="text-xl sm:text-2xl font-bold text-white tracking-tight">RAM Addresses (&), Dereferencing (*), and Pass-by-Reference</h2>
+      </div>
+
+      <!-- STEP 1: 5-MIN CONCEPT BRIEFING -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-md space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-border pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-6 h-6 rounded-full bg-forge-cyan/20 border border-forge-cyan text-forge-cyan flex items-center justify-center font-mono font-bold text-xs">1</span>
+            <h3 class="font-bold text-sm text-gray-200 uppercase tracking-wider">5-Min Concept Briefing (First-Principles Model)</h3>
+          </div>
+          <span class="text-xs text-gray-400 font-mono">THEORY & C17 SYNTAX</span>
+        </div>
+
+        <!-- Explanatory Text -->
+        <div id="qw-concept-text" class="text-sm text-gray-300 leading-relaxed space-y-3">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- C Code Example Snippet -->
+        <div class="rounded-lg overflow-hidden border border-gray-800 bg-gray-950">
+          <div class="bg-gray-900/80 px-3 py-1.5 border-b border-gray-800 flex justify-between items-center text-xs font-mono text-gray-400">
+            <span>C17 Reference Pattern</span>
+            <button onclick="copyCodeBlock('qw-code-snippet')" class="hover:text-forge-cyan flex items-center space-x-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              <span>Copy</span>
+            </button>
+          </div>
+          <pre class="p-4 overflow-x-auto text-xs"><code id="qw-code-snippet" class="text-gray-200"></code></pre>
+        </div>
+
+        <!-- UB / Trap Alert Box -->
+        <div class="bg-amber-950/30 border border-amber-500/40 rounded-lg p-3.5 flex space-x-3 items-start">
+          <svg class="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <div class="text-xs space-y-1">
+            <strong class="text-amber-400 font-mono uppercase tracking-wider">C UB & Trap Alert:</strong>
+            <p id="qw-ub-alert" class="text-gray-300 leading-normal">Never dereference uninitialized or NULL pointers. Accessing garbage addresses causes Undefined Behavior or immediate Segmentation Faults.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: INSTANT MICRO-CHECK (QUIZ) -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-md space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-border pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-6 h-6 rounded-full bg-forge-purple/20 border border-forge-purple text-forge-purple flex items-center justify-center font-mono font-bold text-xs">2</span>
+            <h3 class="font-bold text-sm text-gray-200 uppercase tracking-wider">Instant Micro-Check (Verify Understanding)</h3>
+          </div>
+          <span class="text-xs text-gray-400 font-mono">2 QUICK DIAGNOSTICS</span>
+        </div>
+
+        <div id="qw-quiz-container" class="space-y-4 text-xs font-mono">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 3: 20-MIN TERMINAL LAB -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-md space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-border pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-6 h-6 rounded-full bg-forge-emerald/20 border border-forge-emerald text-forge-emerald flex items-center justify-center font-mono font-bold text-xs">3</span>
+            <h3 class="font-bold text-sm text-gray-200 uppercase tracking-wider">20-Min Terminal Lab (Hands-On Reps)</h3>
+          </div>
+          <span class="text-xs text-gray-400 font-mono">BUILD ON YOUR MACHINE</span>
+        </div>
+
+        <!-- Implementation Checklist -->
+        <div>
+          <h4 class="text-xs font-bold text-gray-300 font-mono mb-2 uppercase">Implementation Requirements:</h4>
+          <ul id="qw-lab-checklist" class="space-y-2 text-xs font-mono">
+            <!-- Populated by JS -->
+          </ul>
+        </div>
+
+        <!-- Strict Compile Command -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center text-[11px] font-mono text-gray-400">
+            <span>Strict GCC/Clang Compilation Command:</span>
+            <div class="flex items-center space-x-2">
+              <button onclick="toggleCompilerOS('gcc')" id="btn-comp-gcc" class="text-forge-cyan font-bold border-b border-forge-cyan">Linux/GCC</button>
+              <span>/</span>
+              <button onclick="toggleCompilerOS('clang')" id="btn-comp-clang" class="text-gray-500 hover:text-gray-300">macOS/Clang</button>
+            </div>
+          </div>
+          <div class="bg-gray-950 border border-gray-800 rounded p-2.5 flex items-center justify-between font-mono text-xs text-forge-cyan">
+            <code id="qw-compile-cmd" class="select-all">gcc -std=c17 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined day01_ram_pointers.c -o day01 && ./day01</code>
+            <button onclick="copyCompileCmd()" class="text-gray-400 hover:text-white ml-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Expected Terminal Output Preview -->
+        <div>
+          <h4 class="text-xs font-bold text-gray-400 font-mono mb-1.5 uppercase">Expected Output Target:</h4>
+          <pre class="bg-gray-950 border border-gray-800 rounded p-3 text-xs font-mono text-emerald-400 overflow-x-auto"><code id="qw-expected-out"></code></pre>
+        </div>
+
+        <!-- Coach Hint Collapsible -->
+        <details class="group bg-gray-900 border border-gray-800 rounded-lg">
+          <summary class="p-3 text-xs font-mono text-gray-300 font-bold cursor-pointer hover:text-forge-cyan flex justify-between items-center select-none">
+            <span>💡 Stuck? View Coach Implementation Hint</span>
+            <span class="transition-transform group-open:rotate-180">▼</span>
+          </summary>
+          <div class="p-3 pt-0 border-t border-gray-800/50 text-xs text-gray-300 leading-relaxed font-mono space-y-2" id="qw-coach-hint">
+            <!-- Populated by JS -->
+          </div>
+        </details>
+      </div>
+
+      <!-- STEP 4: 5-MIN RACK THE WEIGHT (LOGBOOK & COMPLETE) -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-md space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-border pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-6 h-6 rounded-full bg-forge-amber/20 border border-forge-amber text-forge-amber flex items-center justify-center font-mono font-bold text-xs">4</span>
+            <h3 class="font-bold text-sm text-gray-200 uppercase tracking-wider">Rack The Weight (Logbook & Next Set)</h3>
+          </div>
+          <span class="text-xs text-gray-400 font-mono">NEVER START FROM SCRATCH AGAIN</span>
+        </div>
+
+        <div>
+          <label for="qw-next-set-note" class="block text-xs font-mono text-gray-300 mb-1">Your <code class="text-forge-cyan">// NEXT SET:</code> log entry for tomorrow (autosaved):</label>
+          <textarea id="qw-next-set-note" rows="2" placeholder="// NEXT SET: Tomorrow I will practice pass-by-reference with swap functions..." class="w-full bg-gray-950 border border-gray-800 rounded p-2.5 text-xs font-mono text-gray-200 placeholder-gray-600 focus:outline-none focus:border-forge-cyan"></textarea>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div class="text-xs font-mono text-gray-400" id="qw-status-lbl">
+            Status: <span class="text-amber-400 font-bold">IN PROGRESS</span>
+          </div>
+          
+          <div class="flex space-x-3">
+            <button onclick="completeCurrentDay()" id="btn-complete-day" class="bg-gradient-to-r from-forge-emerald to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-black font-bold text-xs px-5 py-2.5 rounded-lg shadow-lg flex items-center space-x-2 transition-all">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+              <span>COMPLETE DAY (+100 XP)</span>
+            </button>
+            <button onclick="loadNextQuest()" id="btn-next-day" class="hidden bg-gray-800 hover:bg-gray-700 text-forge-cyan border border-forge-cyan/40 font-bold text-xs px-4 py-2.5 rounded-lg transition-all flex items-center space-x-1">
+              <span>Next Quest</span>
+              <span>→</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW TAB 2: ROADMAP & BOSS RAIDS -->
+    <section id="view-roadmap" class="hidden flex-1 flex flex-col space-y-6 overflow-y-auto pr-1">
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-lg">
+        <h2 class="text-xl font-bold text-white mb-1">6-Tier Systems Mastery Roadmap</h2>
+        <p class="text-xs text-gray-400 font-mono">Click any day module to jump directly to its workspace, or tackle the 4 Capstone Boss Raids.</p>
+      </div>
+
+      <!-- Tier Grids -->
+      <div id="roadmap-tier-container" class="space-y-6">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- 4 CAPSTONE BOSS RAIDS SECTION -->
+      <div class="space-y-4 pt-4">
+        <div class="flex items-center space-x-3">
+          <div class="p-2 bg-crimson-950 text-forge-crimson border border-forge-crimson/40 rounded-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white font-mono uppercase">Capstone Boss Raids</h3>
+            <p class="text-xs text-gray-400 font-mono">End-of-tier complex software engineering projects designed to prove operational capability.</p>
+          </div>
+        </div>
+
+        <div id="boss-raids-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW TAB 3: INTERACTIVE LABS -->
+    <section id="view-labs" class="hidden flex-1 flex flex-col space-y-6 overflow-y-auto pr-1">
+      <!-- LAB 1: RAM & POINTER VISUALIZER -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-lg space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-3">
+          <div>
+            <h3 class="text-base font-bold text-white font-mono flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-forge-cyan"></span>
+              <span>Lab 1: RAM & Pointer Address Visualizer</span>
+            </h3>
+            <p class="text-xs text-gray-400">Inspect stack variables, pointer dereferencing, heap allocations, and dangling pointer traps in real-time.</p>
+          </div>
+          <button onclick="resetRamLab()" class="bg-gray-800 hover:bg-gray-700 border border-gray-700 text-xs text-gray-300 font-mono px-3 py-1 rounded">Reset RAM</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex flex-wrap gap-2 text-xs font-mono">
+          <button onclick="stepRamLab(1)" class="bg-gray-900 hover:bg-gray-800 border border-forge-cyan/40 text-forge-cyan px-3 py-1.5 rounded">1. int hp = 100;</button>
+          <button onclick="stepRamLab(2)" class="bg-gray-900 hover:bg-gray-800 border border-forge-cyan/40 text-forge-cyan px-3 py-1.5 rounded">2. int *ptr = &hp;</button>
+          <button onclick="stepRamLab(3)" class="bg-gray-900 hover:bg-gray-800 border border-forge-cyan/40 text-forge-cyan px-3 py-1.5 rounded">3. *ptr = 85;</button>
+          <button onclick="stepRamLab(4)" class="bg-gray-900 hover:bg-gray-800 border border-purple-500/40 text-purple-400 px-3 py-1.5 rounded">4. int *buf = malloc(16);</button>
+          <button onclick="stepRamLab(5)" class="bg-gray-900 hover:bg-gray-800 border border-purple-500/40 text-purple-400 px-3 py-1.5 rounded">5. buf[0] = 42;</button>
+          <button onclick="stepRamLab(6)" class="bg-gray-900 hover:bg-gray-800 border border-forge-crimson/40 text-forge-crimson px-3 py-1.5 rounded">6. free(buf); (Dangling!)</button>
+        </div>
+
+        <!-- Active Execution Line -->
+        <div class="bg-gray-950 border border-gray-800 p-2.5 rounded text-xs font-mono">
+          <span class="text-gray-500">Current Code Line: </span>
+          <code id="ram-code-line" class="text-forge-emerald font-bold">/* Select a step button above to mutate RAM */</code>
+        </div>
+
+        <!-- RAM Grid Display -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Stack Memory Table -->
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 space-y-2">
+            <h4 class="text-xs font-bold text-forge-cyan font-mono uppercase tracking-wider flex items-center justify-between">
+              <span>Stack Memory Segment</span>
+              <span class="text-[10px] text-gray-500">High Addresses (0x7FFF...)</span>
+            </h4>
+            <div id="ram-stack-table" class="space-y-1.5 text-xs font-mono">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Heap Memory Table -->
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 space-y-2">
+            <h4 class="text-xs font-bold text-forge-purple font-mono uppercase tracking-wider flex items-center justify-between">
+              <span>Heap Memory Segment</span>
+              <span class="text-[10px] text-gray-500">Low Addresses (0x55E2...)</span>
+            </h4>
+            <div id="ram-heap-table" class="space-y-1.5 text-xs font-mono">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAB 2: BITWISE & ENDIANNESS NETWORK LAB -->
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-lg space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-surface-border pb-3">
+          <div>
+            <h3 class="text-base font-bold text-white font-mono flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-forge-amber"></span>
+              <span>Lab 2: Bitwise Operations & Network Endianness Converter</span>
+            </h3>
+            <p class="text-xs text-gray-400">Toggle individual bits, test bitmasks, and compare Host Byte Order (Little-Endian) vs Network Byte Order (Big-Endian `htons`/`htonl`).</p>
+          </div>
+        </div>
+
+        <!-- Numeric Input & Quick Presets -->
+        <div class="flex flex-wrap items-center gap-3">
+          <div class="flex items-center space-x-2">
+            <label class="text-xs font-mono text-gray-400">Integer Value:</label>
+            <input type="number" id="bit-input-val" value="8080" oninput="updateBitLabFromInput()" class="bg-gray-950 border border-gray-800 rounded px-3 py-1 text-xs font-mono text-forge-cyan w-32 focus:outline-none focus:border-forge-cyan">
+          </div>
+          <div class="flex space-x-1.5 text-xs font-mono text-gray-400">
+            <span>Presets:</span>
+            <button onclick="setBitPreset(8080)" class="hover:text-forge-cyan bg-gray-900 border border-gray-800 px-2 py-0.5 rounded">8080 (Port)</button>
+            <button onclick="setBitPreset(3232235777)" class="hover:text-forge-cyan bg-gray-900 border border-gray-800 px-2 py-0.5 rounded">192.168.1.1 (IP)</button>
+            <button onclick="setBitPreset(255)" class="hover:text-forge-cyan bg-gray-900 border border-gray-800 px-2 py-0.5 rounded">0xFF (255)</button>
+          </div>
+        </div>
+
+        <!-- 32-Bit Grid Toggler -->
+        <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 space-y-2">
+          <div class="flex justify-between text-[11px] font-mono text-gray-400">
+            <span>32-Bit Binary Register (Click Bit to Toggle 0/1):</span>
+            <span id="bit-hex-label" class="text-forge-cyan font-bold">Hex: 0x00001F90</span>
+          </div>
+          
+          <div id="bit-grid-container" class="grid grid-cols-16 sm:grid-cols-32 gap-1 text-center font-mono text-xs">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <!-- Endianness Wire Comparison -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+          <!-- Host Order -->
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 space-y-2">
+            <h4 class="font-bold text-forge-cyan uppercase tracking-wider">Host Byte Order (x86_64 / ARM64)</h4>
+            <p class="text-[11px] text-gray-400">Little-Endian: Least Significant Byte stored first in memory.</p>
+            <div id="bit-host-bytes" class="flex space-x-2 pt-1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Network Order -->
+          <div class="bg-gray-950 border border-gray-800 rounded-lg p-3 space-y-2">
+            <h4 class="font-bold text-forge-emerald uppercase tracking-wider">Network Byte Order (Wire Protocol)</h4>
+            <p class="text-[11px] text-gray-400">Big-Endian (`htons`/`htonl`): Most Significant Byte transmitted first.</p>
+            <div id="bit-net-bytes" class="flex space-x-2 pt-1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW TAB 4: SYSTEMS ARMORY -->
+    <section id="view-armory" class="hidden flex-1 flex flex-col space-y-6 overflow-y-auto pr-1">
+      <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-lg space-y-4">
+        <h2 class="text-xl font-bold text-white font-mono">Systems & Network Programming Armory</h2>
+        <p class="text-xs text-gray-400 font-mono">Essential battle-tested compiler flags, debugger command reference, POSIX socket lifecycles, and Undefined Behavior guards.</p>
+
+        <!-- Compiler Flags Section -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-forge-cyan font-mono uppercase tracking-wider border-b border-gray-800 pb-1">1. Compilation Templates</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+            <div class="bg-gray-950 border border-gray-800 rounded p-3 space-y-2">
+              <span class="text-forge-emerald font-bold">Strict Debug + Sanitizers (Daily Dev):</span>
+              <pre class="text-gray-300 select-all overflow-x-auto bg-gray-900 p-2 rounded">gcc -std=c17 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined &lt;file.c&gt; -o &lt;out&gt;</pre>
+            </div>
+            <div class="bg-gray-950 border border-gray-800 rounded p-3 space-y-2">
+              <span class="text-forge-purple font-bold">Max Performance Release Build:</span>
+              <pre class="text-gray-300 select-all overflow-x-auto bg-gray-900 p-2 rounded">gcc -std=c17 -O3 -DNDEBUG -Wall -Wextra &lt;file.c&gt; -o &lt;out&gt;</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Debugger Matrix -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-forge-purple font-mono uppercase tracking-wider border-b border-gray-800 pb-1">2. GDB vs LLDB Command Matrix</h3>
+          <div class="overflow-x-auto border border-gray-800 rounded-lg">
+            <table class="w-full text-left text-xs font-mono">
+              <thead class="bg-gray-900 text-gray-400 border-b border-gray-800">
+                <tr>
+                  <th class="p-2.5">Action</th>
+                  <th class="p-2.5 text-forge-cyan">Linux GDB</th>
+                  <th class="p-2.5 text-forge-emerald">macOS LLDB</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-800/60 bg-gray-950 text-gray-300">
+                <tr><td class="p-2.5 font-semibold">Start Debugger</td><td><code>gdb ./app</code></td><td><code>lldb ./app</code></td></tr>
+                <tr><td class="p-2.5 font-semibold">Set Breakpoint</td><td><code>b main</code> or <code>b file.c:25</code></td><td><code>b main</code> or <code>b file.c:25</code></td></tr>
+                <tr><td class="p-2.5 font-semibold">Run Program</td><td><code>run</code> (or <code>r</code>)</td><td><code>run</code> (or <code>r</code>)</td></tr>
+                <tr><td class="p-2.5 font-semibold">Next Line (Step Over)</td><td><code>next</code> (or <code>n</code>)</td><td><code>thread step-over</code> (or <code>n</code>)</td></tr>
+                <tr><td class="p-2.5 font-semibold">Step Into Function</td><td><code>step</code> (or <code>s</code>)</td><td><code>thread step-in</code> (or <code>s</code>)</td></tr>
+                <tr><td class="p-2.5 font-semibold">Print Variable</td><td><code>print var</code> (or <code>p var</code>)</td><td><code>frame variable var</code> (or <code>p var</code>)</td></tr>
+                <tr><td class="p-2.5 font-semibold">Examine 16 Bytes Hex</td><td><code>x/16xb ptr</code></td><td><code>memory read -c 16 -f x ptr</code></td></tr>
+                <tr><td class="p-2.5 font-semibold">Backtrace (Call Stack)</td><td><code>backtrace</code> (or <code>bt</code>)</td><td><code>bt</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- POSIX Socket Syscall Lifecycle Diagram -->
+        <div class="space-y-3">
+          <h3 class="text-sm font-bold text-forge-amber font-mono uppercase tracking-wider border-b border-gray-800 pb-1">3. POSIX TCP Socket Syscall Lifecycle</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
+            <!-- Server Flow -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3.5 space-y-2">
+              <h4 class="font-bold text-forge-emerald uppercase">TCP Server Lifecycle</h4>
+              <ol class="list-decimal list-inside space-y-1 text-gray-300">
+                <li><code>getaddrinfo()</code> - Resolve bind address</li>
+                <li><code>socket()</code> - Get listening socket FD</li>
+                <li><code>setsockopt(SO_REUSEADDR)</code> - Prevent address locked bug</li>
+                <li><code>bind()</code> - Assign IP + Port to socket</li>
+                <li><code>listen()</code> - Mark socket as passive queue</li>
+                <li><code>accept()</code> - Block until client connects -> returns client FD</li>
+                <li><code>recv()</code> / <code>send()</code> - Read/Write binary stream</li>
+                <li><code>close()</code> - Teardown connection</li>
+              </ol>
+            </div>
+
+            <!-- Client Flow -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-3.5 space-y-2">
+              <h4 class="font-bold text-forge-cyan uppercase">TCP Client Lifecycle</h4>
+              <ol class="list-decimal list-inside space-y-1 text-gray-300">
+                <li><code>getaddrinfo()</code> - Resolve server hostname/IP</li>
+                <li><code>socket()</code> - Create communication endpoint</li>
+                <li><code>connect()</code> - Initiate 3-way TCP handshake</li>
+                <li><code>send_all()</code> - Send structured payload loop</li>
+                <li><code>recv()</code> - Read server response</li>
+                <li><code>close()</code> - Terminate socket</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- DATA BACKUP / SYNC MODAL -->
+  <div id="modal-backup" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-surface border border-surface-border rounded-xl max-w-md w-full p-5 space-y-4 shadow-2xl font-mono text-xs">
+      <div class="flex justify-between items-center border-b border-gray-800 pb-2">
+        <h3 class="text-sm font-bold text-white uppercase">Progress Backup & Sync</h3>
+        <button onclick="closeBackupModal()" class="text-gray-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="space-y-2">
+        <button onclick="exportProgressJSON()" class="w-full bg-gray-900 hover:bg-gray-800 border border-forge-cyan/40 text-forge-cyan font-bold py-2 rounded flex items-center justify-center space-x-2">
+          <span>Export Progress JSON File</span>
+        </button>
+        <div class="flex items-center justify-between space-x-2">
+          <input type="file" id="import-json-file" class="hidden" onchange="importProgressJSON(event)">
+          <button onclick="document.getElementById('import-json-file').click()" class="w-full bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 font-bold py-2 rounded">
+            Import Progress JSON
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-800 pt-3">
+        <button onclick="resetAllProgress()" class="w-full bg-crimson-950/40 hover:bg-crimson-900/60 border border-forge-crimson/50 text-forge-crimson font-bold py-2 rounded">
+          ⚠️ Reset All Data to Level 1
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION DATA & LOGIC -->
+  <script>
+    /* ==========================================================================
+       1. COMPLETE 30-DAY CURRICULUM DATA STORE (C17 COMPLIANT, NO PLACEHOLDERS)
+       ========================================================================== */
+    const CURRICULUM_DATA = [
+      // TIER 1: POINTERS & RAW MEMORY
+      {
+        day: 1, tier: 1, tierName: "Tier 1: Pointers & Raw Memory", title: "RAM Addresses (&), Dereferencing (*), and Pass-by-Reference", time: "25-30m", xp: 100, file: "day01_ram_pointers.c",
+        concept: `<p>In C, every variable lives at a specific numeric byte location in computer RAM. The address-of operator (<code>&amp;</code>) inspects where a variable sits in memory, while a pointer variable (e.g. <code>int *ptr</code>) stores that exact address. The dereference operator (<code>*ptr</code>) tells the CPU: <em>"Go to the memory address inside <code>ptr</code> and mutate or read the value stored there."</em></p><p>When you pass a standard integer to a function, C creates a <strong>copy</strong> (pass-by-value). To mutate variables inside caller functions (pass-by-reference), you must pass the variable's memory address instead.</p>`,
+        codeSnippet: `#include <stdio.h>\n\nvoid take_damage_wrong(int hp, int dmg) {\n    hp -= dmg; // Mutates local copy only!\n}\n\nvoid take_damage_correct(int *hp, int dmg) {\n    if (hp != NULL) {\n        *hp -= dmg; // Mutates original RAM location directly\n    }\n}\n\nint main(void) {\n    int player_hp = 100;\n    printf("RAM Address of player_hp: %p\\n", (void *)&player_hp);\n    \n    take_damage_wrong(player_hp, 20);\n    printf("After wrong hit: %d\\n", player_hp); // Still 100\n    \n    take_damage_correct(&player_hp, 25);\n    printf("After correct hit: %d\\n", player_hp); // Now 75\n    return 0;\n}`,
+        ubAlert: "Printing memory addresses with printf requires explicit (void *) casting to conform to the C17 standard and prevent undefined format specifier behavior.",
+        quiz: [
+          { q: "What does the dereference operator (*p) evaluate to when p = &x?", opts: ["The address of p", "The value stored inside variable x", "The size of pointer p", "A new pointer to x"], ans: 1, exp: "*p accesses the actual memory cell pointed to by p, evaluating to x's value." },
+          { q: "Why did take_damage_wrong fail to alter player_hp in main()?", opts: ["Variables in functions are read-only", "C uses pass-by-value, creating an isolated stack copy", "The compiler removed the function", "The stack overflowed"], ans: 1, exp: "Without pointers, arguments are copied by value into the callee's stack frame." }
+        ],
+        checklist: [
+          "Declare an int variable hp initialized to 100 in main().",
+          "Print both its integer value and its RAM address using %p and (void *)&hp.",
+          "Declare a pointer int *ptr = &hp and mutate hp to 85 using only *ptr.",
+          "Write a void real_hit(int *target_hp, int dmg) function and prove in main() that player_hp updates."
+        ],
+        hint: "Make sure your function parameter is int *target_hp, and inside the function body use *target_hp -= dmg. Pass &player_hp when calling it.",
+        expectedOut: "RAM Address of player_hp: 0x7fff5fbff018\nAfter wrong hit: 100\nAfter correct hit: 75"
+      },
+      {
+        day: 2, tier: 1, tierName: "Tier 1: Pointers & Raw Memory", title: "Multi-Output Functions & Pointer Swaps", time: "25-30m", xp: 100, file: "day02_pointer_swaps.c",
+        concept: `<p>Functions in C can only return a single value via the <code>return</code> statement. To return multiple values (e.g., quotient and remainder from division, or swapping two items), we pass pointers into the function as <strong>out-parameters</strong>.</p><p>Swapping two variables requires temporary storage while re-assigning values across memory addresses.</p>`,
+        codeSnippet: `#include <stdio.h>\n\nvoid swap(int *a, int *b) {\n    int temp = *a;\n    *a = *b;\n    *b = temp;\n}\n\nvoid divmod(int dividend, int divisor, int *quotient, int *remainder) {\n    if (quotient && remainder && divisor != 0) {\n        *quotient = dividend / divisor;\n        *remainder = dividend % divisor;\n    }\n}\n\nint main(void) {\n    int x = 10, y = 50;\n    swap(&x, &y);\n    printf("x=%d, y=%d\\n", x, y); // x=50, y=10\n    \n    int q, r;\n    divmod(27, 4, &q, &r);\n    printf("27 / 4 = %d remainder %d\\n", q, r);\n    return 0;\n}`,
+        ubAlert: "Attempting to swap variables by writing void swap(int a, int b) only swaps local copies on the function stack. The original variables in main remain untouched.",
+        quiz: [
+          { q: "What is an 'out-parameter' in C?", opts: ["A global variable", "A pointer parameter used to write function results back to caller memory", "A return statement value", "An environment variable"], ans: 1, exp: "Out-parameters take pointers so the function can mutate multiple variables in caller memory." },
+          { q: "In swap(int *a, int *b), what does int temp = *a do?", opts: ["Stores address of a", "Saves value stored at address 'a' into a stack variable", "Frees memory at a", "Creates a double pointer"], ans: 1, exp: "*a dereferences the pointer to copy the underlying integer value into temp." }
+        ],
+        checklist: [
+          "Implement void pointer_swap(int *a, int *b) that exchanges two integers in RAM.",
+          "Implement void get_min_max(const int *arr, size_t len, int *min_out, int *max_out).",
+          "Test both functions thoroughly in main() and output results."
+        ],
+        hint: "In pointer_swap, remember to hold *a in a temp int variable before overwriting *a with *b.",
+        expectedOut: "Swapped: x=50, y=10\nMin: 4, Max: 99"
+      },
+      {
+        day: 3, tier: 1, tierName: "Tier 1: Pointers & Raw Memory", title: "const Correctness & Read-Only Pointer Safety", time: "25-30m", xp: 100, file: "day03_const_pointers.c",
+        concept: `<p>The <code>const</code> qualifier enforces memory safety at compile time. Position relative to the asterisk dictates what is immutable:</p><ul><li><code>const int *ptr</code>: Pointer to a <strong>const int</strong> (data is read-only, pointer can move).</li><li><code>int * const ptr</code>: <strong>Const pointer</strong> to an int (data is mutable, address is fixed).</li><li><code>const int * const ptr</code>: Both address and target value are immutable.</li></ul>`,
+        codeSnippet: `#include <stdio.h>\n\nvoid print_sensor_data(const int *readings, size_t count) {\n    for (size_t i = 0; i < count; i++) {\n        // readings[i] = 0; // COMPILE ERROR! Immutable data.\n        printf("Sensor %zu: %d\\n", i, readings[i]);\n    }\n}\n\nint main(void) {\n    int val = 42;\n    const int *ptr1 = &val; // Cannot change val via *ptr1\n    int * const ptr2 = &val; // Cannot reassign ptr2 to point elsewhere\n    \n    *ptr2 = 99; // Legal: value mutable via ptr2\n    print_sensor_data(ptr2, 1);\n    return 0;\n}`,
+        ubAlert: "Casting away a const qualifier using (int *) to mutate data that was originally declared const triggers Undefined Behavior.",
+        quiz: [
+          { q: "What does const int *p prevent?", opts: ["Reassigning p to point to another variable", "Mutating the integer value via *p", "Passing p to functions", "Taking the address of p"], ans: 1, exp: "const int *p makes the target integer read-only through p." },
+          { q: "How do you declare a pointer whose memory address CANNOT be changed once assigned?", opts: ["const int *p", "int * const p", "const int const *p", "int const p"], ans: 1, exp: "int * const p makes the pointer address itself constant." }
+        ],
+        checklist: [
+          "Write a function that calculates an array average taking a const int *arr parameter.",
+          "Verify that trying to write arr[0] = 0 inside the function triggers a compiler error.",
+          "Demonstrate the difference between const int * and int * const in main()."
+        ],
+        hint: "Use const int * when passing buffers to functions that should only read data (like inspections or logging).",
+        expectedOut: "Sensor 0: 99\nArray Average: 42.50"
+      },
+      {
+        day: 4, tier: 1, tierName: "Tier 1: Pointers & Raw Memory", title: "NULL Guards, Uninitialized Pointers & Segfault Mechanics", time: "25-30m", xp: 100, file: "day04_segfault_guards.c",
+        concept: `<p>A <strong>Segmentation Fault (Segfault)</strong> occurs when your program attempts to access RAM that the Operating System has not allocated to it. Dereferencing a <code>NULL</code> pointer (address <code>0x0</code>) or an uninitialized "wild pointer" containing random stack garbage causes an instant OS crash.</p><p>Professional C code always guards pointers before dereferencing.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stddef.h>\n\nvoid safe_print(const int *ptr) {\n    if (ptr == NULL) {\n        printf("[GUARD TRIGGERED] Error: NULL pointer passed!\\n");\n        return;\n    }\n    printf("Val: %d\\n", *ptr);\n}\n\nint main(void) {\n    int *wild_ptr; // DANGER: Uninitialized garbage address!\n    wild_ptr = NULL; // SAFE: Explicit NULL initialization\n    \n    safe_print(wild_ptr);\n    \n    int valid = 1337;\n    safe_print(&valid);\n    return 0;\n}`,
+        ubAlert: "Dereferencing NULL (e.g. int x = *ptr when ptr == NULL) is classic Undefined Behavior. Modern CPUs trap this via hardware page tables causing signal SIGSEGV.",
+        quiz: [
+          { q: "What is a 'wild pointer'?", opts: ["A pointer pointing to NULL", "An uninitialized pointer holding arbitrary memory garbage", "A pointer to a function", "A pointer in heap memory"], ans: 1, exp: "Wild pointers contain leftover stack garbage and point to unsafe/random memory." },
+          { q: "What is the numeric value of NULL in C?", opts: ["-1", "0 (or (void *)0)", "255", "Undefined"], ans: 1, exp: "NULL is defined as 0 or (void *)0 representing an invalid memory location." }
+        ],
+        checklist: [
+          "Initialize an uninitialized pointer to NULL explicitly.",
+          "Write a defensive function safe_update(int *ptr, int val) that checks for NULL.",
+          "Compile with -fsanitize=address,undefined to see sanitizer protection in action."
+        ],
+        hint: "Always test `if (ptr != NULL)` or `if (ptr)` before dereferencing incoming pointer arguments.",
+        expectedOut: "[GUARD TRIGGERED] Error: NULL pointer passed!\nVal: 1337"
+      },
+      {
+        day: 5, tier: 1, tierName: "Tier 1: Pointers & Raw Memory", title: "Double Pointers (int **pp) & Mutating Caller Pointers", time: "25-30m", xp: 100, file: "day05_double_pointers.c",
+        concept: `<p>A double pointer (<code>int **pp</code>) is a pointer that stores the address of another pointer. Just as an <code>int *</code> is required to mutate an <code>int</code> inside caller memory, an <code>int **</code> is required to mutate an <code>int *</code> (e.g. changing which buffer a pointer points to, or allocating heap memory inside a helper function).</p>`,
+        codeSnippet: `#include <stdio.h>\n\nvoid allocate_buffer_wrong(int *ptr) {\n    static font_val = 100;\n    ptr = &font_val; // Mutates local copy of pointer!\n}\n\nvoid allocate_buffer_correct(int **pptr) {\n    static int target = 777;\n    if (pptr != NULL) {\n        *pptr = &target; // Mutates original pointer in caller stack frame\n    }\n}\n\nint main(void) {\n    int *my_ptr = NULL;\n    allocate_buffer_wrong(my_ptr);\n    printf("After wrong: %p\\n", (void *)my_ptr); // Still NULL!\n    \n    allocate_buffer_correct(&my_ptr);\n    printf("After correct: %p -> Val: %d\\n", (void *)my_ptr, *my_ptr);\n    return 0;\n}`,
+        ubAlert: "Passing &ptr (address of a pointer) requires an int ** parameter. Passing ptr directly to a function that tries to assign memory to it will lose the reference on return.",
+        quiz: [
+          { q: "Why do we use double pointers (int **)?", opts: ["To double the pointer size", "To mutate an int * pointer variable inside caller memory", "To create 2D arrays only", "To speed up compilation"], ans: 1, exp: "Double pointers allow a function to modify the address stored in a caller's pointer variable." },
+          { q: "If pp is declared as int **pp, what does *pp evaluate to?", opts: ["An integer value", "An int * pointer address", "A float address", "NULL"], ans: 1, exp: "Dereferencing a double pointer (*pp) yields the single pointer (int *) it points to." }
+        ],
+        checklist: [
+          "Declare an int val = 500, an int *p = &val, and an int **pp = &p.",
+          "Print the values of val using val, *p, and **pp.",
+          "Implement a function void set_target(int **out_ptr, int *new_target) that updates the caller's pointer."
+        ],
+        hint: "In main, call set_target(&p, &another_var). Pass the address of the pointer variable using &.",
+        expectedOut: "After wrong: (nil)\nAfter correct: 0x55e2... -> Val: 777"
+      },
+
+      // TIER 2: CONTIGUOUS MEMORY, ARRAYS & C-STRINGS
+      {
+        day: 6, tier: 2, tierName: "Tier 2: Contiguous Memory & Strings", title: "Array-to-Pointer Decay, sizeof Traps & Pointer Arithmetic", time: "25-30m", xp: 100, file: "day06_array_decay.c",
+        concept: `<p>In C, array elements are stored in contiguous memory bytes. When an array name is passed to a function, it <strong>decays</strong> into a raw pointer to its first element (<code>&amp;arr[0]</code>). Inside the callee, <code>sizeof(arr)</code> no longer yields total array byte size, but rather the size of a 64-bit pointer (8 bytes)!</p><p>Pointer arithmetic automatically scales offsets by <code>sizeof(T)</code>: <code>*(p + i)</code> accesses element <code>i</code>.</p>`,
+        codeSnippet: `#include <stdio.h>\n\nvoid inspect_array(const int *arr, size_t count) {\n    printf("sizeof(arr) inside callee: %zu bytes (POINTER DECAY!)\\n", sizeof(arr));\n    for (size_t i = 0; i < count; i++) {\n        // *(arr + i) is identical to arr[i]\n        printf("Elem %zu at %p: %d\\n", i, (void *)(arr + i), *(arr + i));\n    }\n}\n\nint main(void) {\n    int numbers[4] = {10, 20, 30, 40};\n    printf("sizeof(numbers) in main: %zu bytes\\n", sizeof(numbers));\n    \n    inspect_array(numbers, 4);\n    return 0;\n}`,
+        ubAlert: "Never calculate array length inside a function using sizeof(arr)/sizeof(arr[0]). Because arr decays to a pointer, this evaluates to 8 / 4 = 2 elements regardless of actual size!",
+        quiz: [
+          { q: "What does 'array decay' mean in C?", opts: ["Arrays degrade in RAM over time", "An array argument degrades into a pointer to its first element when passed to a function", "Arrays are converted to heap memory", "Elements are deleted"], ans: 1, exp: "Array names automatically decay into pointers to their zero-index element upon function calls." },
+          { q: "If int *p points to an int array (4 bytes per int), what does (p + 2) do?", opts: ["Adds 2 bytes to address", "Adds 8 bytes (2 * sizeof(int)) to address", "Multiplies value by 2", "Triggers segfault"], ans: 1, exp: "Pointer arithmetic automatically scales offsets by sizeof(type)." }
+        ],
+        checklist: [
+          "Declare an array of 5 integers in main().",
+          "Print sizeof(numbers) in main() vs inside a helper function to witness decay.",
+          "Traverse the array using pointer arithmetic *(arr + i) instead of bracket indexing arr[i]."
+        ],
+        hint: "Always pass explicit `size_t length` parameters alongside array pointers to functions.",
+        expectedOut: "sizeof(numbers) in main: 16 bytes\nsizeof(arr) inside callee: 8 bytes (POINTER DECAY!)\nElem 0 at 0x7fff...: 10"
+      },
+      {
+        day: 7, tier: 2, tierName: "Tier 2: Contiguous Memory & Strings", title: "Null-Terminated Strings ('\\0'), size_t & Rebuilding strlen/strcmp", time: "25-30m", xp: 100, file: "day07_cstring_internals.c",
+        concept: `<p>C strings are simply contiguous arrays of <code>char</code> terminated by a null byte (<code>'\\0'</code> or ASCII <code>0</code>). Standard string functions scan memory until they encounter this <code>'\\0'</code> byte.</p><p>We use <code>size_t</code> for lengths and memory counts (formatted with <code>%zu</code>).</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stddef.h>\n\nsize_t my_strlen(const char *str) {\n    if (!str) return 0;\n    const char *p = str;\n    while (*p != '\\0') {\n        p++;\n    }\n    return (size_t)(p - str); // Pointer subtraction yields element count\n}\n\nint my_strcmp(const char *s1, const char *s2) {\n    while (*s1 && (*s1 == *s2)) {\n        s1++; s2++;\n    }\n    return *(const unsigned char *)s1 - *(const unsigned char *)s2;\n}\n\nint main(void) {\n    const char *msg = "CYBER";\n    printf("String length of '%s': %zu\\n", msg, my_strlen(msg));\n    printf("Comparing 'CYBER' vs 'CYBER': %d\\n", my_strcmp("CYBER", "CYBER"));\n    return 0;\n}`,
+        ubAlert: "Passing a non-null-terminated char array to strlen causes buffer overread UB. The CPU reads past array boundaries until hitting a random 0 byte in RAM.",
+        quiz: [
+          { q: "What marks the end of a C-style string in memory?", opts: ["New line '\\n'", "Null terminator byte '\\0'", "EOF marker", "Space ' '"], ans: 1, exp: "Null terminator '\\0' signals the end of string buffers." },
+          { q: "What format specifier must be used for size_t variables in printf?", opts: ["%d", "%ld", "%zu", "%p"], ans: 2, exp: "%zu is the portable C standard format specifier for size_t." }
+        ],
+        checklist: [
+          "Implement custom size_t my_strlen(const char *s) using pointer arithmetic.",
+          "Implement custom int my_strcmp(const char *s1, const char *s2).",
+          "Test both functions with various test strings in main()."
+        ],
+        hint: "In my_strlen, subtracting the starting pointer (str) from the ending pointer (p) yields the total number of characters.",
+        expectedOut: "String length of 'CYBER': 5\nComparing 'CYBER' vs 'CYBER': 0"
+      },
+      {
+        day: 8, tier: 2, tierName: "Tier 2: Contiguous Memory & Strings", title: "Safe Buffer Copying (snprintf, my_strlcpy) & Overflow Prevention", time: "25-30m", xp: 100, file: "day08_safe_str_copy.c",
+        concept: `<p>Functions like <code>strcpy</code> and <code>strcat</code> are notorious cybersecurity hazards because they copy bytes without checking destination buffer boundaries. Attackers exploit this to overwrite return addresses on the stack.</p><p>We use bounds-checked functions like <code>snprintf</code> or custom <code>my_strlcpy</code> to guarantee null-termination and prevent buffer overflows.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stddef.h>\n\nsize_t my_strlcpy(char *dst, const char *src, size_t dstsize) {\n    if (!dst || !src || dstsize == 0) return 0;\n    size_t i = 0;\n    while (src[i] != '\\0' && i < dstsize - 1) {\n        dst[i] = src[i];\n        i++;\n    }\n    dst[i] = '\\0'; // Always guarantee null termination\n    while (src[i] != '\\0') i++; // Return intended src length\n    return i;\n}\n\nint main(void) {\n    char dest[8];\n    const char *long_src = "SUPERLONGSTRING";\n    \n    // Safe bounds-checked copy\n    my_strlcpy(dest, long_src, sizeof(dest));\n    printf("Truncated dest buffer: '%s' (sizeof=%zu)\\n", dest, sizeof(dest));\n    \n    // Safe formatted print\n    char buf[16];\n    snprintf(buf, sizeof(buf), "User #%d: %s", 42, "CyberAnalyst");\n    printf("snprintf output: '%s'\\n", buf);\n    return 0;\n}`,
+        ubAlert: "Never use strcpy or sprintf in production or security tools. Always supply explicit destination buffer sizes.",
+        quiz: [
+          { q: "Why is strcpy unsafe?", opts: ["It is slow", "It does not accept a maximum destination buffer size argument", "It requires malloc", "It reverses strings"], ans: 1, exp: "strcpy copies indefinitely until hitting '\\0' in source, corrupting memory if destination is smaller." },
+          { q: "What does snprintf guarantee when used correctly?", opts: ["Fast speed", "Buffer overflow protection & null termination within max size", "Heap allocation", "Compression"], ans: 1, exp: "snprintf respects max byte count and guarantees null termination." }
+        ],
+        checklist: [
+          "Create a small fixed-size buffer char buffer[10].",
+          "Demonstrate safe copying of a long string using snprintf(buffer, sizeof(buffer), ...).",
+          "Verify that destination buffer is null-terminated without stack corruption."
+        ],
+        hint: "snprintf takes (dest, size, format, ...) and returns the number of chars that WOULD have been written if buffer were large enough.",
+        expectedOut: "Truncated dest buffer: 'SUPERLO' (sizeof=8)\nsnprintf output: 'User #42: CyberA'"
+      },
+      {
+        day: 9, tier: 2, tierName: "Tier 2: Contiguous Memory & Strings", title: "Safe Input Parsing: fgets + strcspn + strtol vs scanf/atoi", time: "25-30m", xp: 100, file: "day09_safe_input.c",
+        concept: `<p>Functions like <code>scanf("%s")</code> or <code>gets()</code> cause buffer overflows, while <code>atoi()</code> fails silently on bad input returning <code>0</code>. The professional C input pipeline uses:</p><ol><li><code>fgets()</code> to safely read line buffers without overflowing.</li><li><code>strcspn()</code> to strip trailing newline characters (<code>'\\n'</code>).</li><li><code>strtol()</code> to convert strings to integers with full error checking.</li></ol>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <errno.h>\n\nint parse_int(const char *str, long *out_val) {\n    char *endptr;\n    errno = 0;\n    long val = strtol(str, &endptr, 10);\n    if (errno != 0 || endptr == str || *endptr != '\\0') {\n        return 0; // Parsing failed!\n    }\n    *out_val = val;\n    return 1; // Success\n}\n\nint main(void) {\n    char input[32] = "4096\\n";\n    // Strip trailing newline\n    input[strcspn(input, "\\r\\n")] = '\\0';\n    \n    long parsed_val;\n    if (parse_int(input, &parsed_val)) {\n        printf("Successfully parsed number: %ld\\n", parsed_val);\n    } else {\n        printf("Failed to parse integer!\\n");\n    }\n    return 0;\n}`,
+        ubAlert: "gets() was completely removed from the ISO C standard because it cannot prevent buffer overflows. Never use gets() or scanf('%s').",
+        quiz: [
+          { q: "Why is atoi() avoided in production code?", opts: ["It is obsolete", "It cannot distinguish between parsing valid '0' vs parsing error", "It overflows heap", "It takes pointers"], ans: 1, exp: "atoi returns 0 on error, making invalid inputs like 'abc' indistinguishable from valid '0'." },
+          { q: "What does strcspn(str, '\\n') return?", opts: ["String length", "Index of the first occurrence of '\\n'", "Pointer to end", "ASCII code"], ans: 1, exp: "strcspn returns length of initial segment not containing specified characters." }
+        ],
+        checklist: [
+          "Create a mock input buffer char input[64] = '8080\\n'.",
+          "Strip newline using input[strcspn(input, '\\r\\n')] = '\\0'.",
+          "Safely convert to long port using strtol and check endptr for syntax errors."
+        ],
+        hint: "Check `if (endptr == str)` to verify that at least one numeric digit was parsed.",
+        expectedOut: "Successfully parsed number: 4096"
+      },
+      {
+        day: 10, tier: 2, tierName: "Tier 2: Contiguous Memory & Strings", title: "Raw Byte Buffers (uint8_t*, void*, memcpy vs memmove)", time: "25-30m", xp: 100, file: "day10_raw_byte_buffers.c",
+        concept: `<p>Systems and cybersecurity software deals with raw binary bytes rather than text strings. We use <code>uint8_t *</code> (from <code>&lt;stdint.h&gt;</code>) or <code>void *</code> for generic raw buffers.</p><p>Use <code>memcpy</code> for non-overlapping memory blocks, and <code>memmove</code> when source and destination buffers might overlap in RAM.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <string.h>\n\nvoid dump_hex(const void *ptr, size_t len) {\n    const uint8_t *bytes = (const uint8_t *)ptr;\n    for (size_t i = 0; i < len; i++) {\n        printf("%02X ", bytes[i]);\n    }\n    printf("\\n");\n}\n\nint main(void) {\n    uint8_t packet[8] = {0xDE, 0xAD, 0xBE, 0xEF, 0x01, 0x02, 0x03, 0x04};\n    printf("Original packet: ");\n    dump_hex(packet, 8);\n    \n    // Overlapping shift requires memmove!\n    memmove(&packet[2], &packet[0], 4);\n    printf("After overlapping memmove: ");\n    dump_hex(packet, 8);\n    return 0;\n}`,
+        ubAlert: "Using memcpy on overlapping memory regions causes Undefined Behavior. Always use memmove when shifting data inside the same buffer.",
+        quiz: [
+          { q: "When MUST you use memmove instead of memcpy?", opts: ["When copying integers", "When source and destination RAM regions overlap", "When copying strings", "On 64-bit systems"], ans: 1, exp: "memmove handles overlapping memory safely by copying via temporary storage if needed." },
+          { q: "What header defines uint8_t?", opts: ["<stdio.h>", "<stdlib.h>", "<stdint.h>", "<string.h>"], ans: 2, exp: "<stdint.h> provides fixed-width integer types like uint8_t and uint32_t." }
+        ],
+        checklist: [
+          "Declare a uint8_t raw_buf[8] initialized with hex values.",
+          "Write a dump_hex function using const uint8_t * to print hex bytes.",
+          "Demonstrate safe byte shifting using memmove."
+        ],
+        hint: "Cast void * pointers to const uint8_t * inside functions to perform byte-by-byte inspection.",
+        expectedOut: "Original packet: DE AD BE EF 01 02 03 04 \nAfter overlapping memmove: DE AD DE AD BE EF 03 04"
+      },
+
+      // TIER 3: STRUCTS, ALIGNMENT & MEMORY LAYOUT
+      {
+        day: 11, tier: 3, tierName: "Tier 3: Structs & Memory Layout", title: "Struct Design, typedef, Arrow Operator (->) & Pass-by-Pointer", time: "25-30m", xp: 100, file: "day11_struct_basics.c",
+        concept: `<p>A <code>struct</code> groups related variables into a single contiguous block of memory. We use <code>typedef</code> to create clean type aliases. When passing structs to functions, pass pointers (<code>const Player *p</code>) to avoid expensive stack copies, accessing members via the arrow operator (<code>p-&gt;hp</code>).</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n\ntypedef struct {\n    uint32_t id;\n    int hp;\n    int mana;\n} Player;\n\nvoid heal_player(Player *p, int amount) {\n    if (p) {\n        p->hp += amount; // p->hp is shorthand for (*p).hp\n    }\n}\n\nint main(void) {\n    Player hero = {.id = 101, .hp = 50, .mana = 100};\n    printf("Pre-heal HP: %d\\n", hero.hp);\n    \n    heal_player(&hero, 30);\n    printf("Post-heal HP: %d\\n", hero.hp);\n    return 0;\n}`,
+        ubAlert: "Passing large structs by value (e.g. void process(Player p)) copies every byte onto the stack frame, destroying CPU cache locality and performance.",
+        quiz: [
+          { q: "What is the arrow operator (p->field) shorthand for?", opts: ["&p.field", "(*p).field", "*p->field", "p.&field"], ans: 1, exp: "p->field dereferences struct pointer p and accesses field." },
+          { q: "Why typedef a struct?", opts: ["Increases RAM size", "Allows referencing type without typing 'struct' keyword every time", "Fixes segfaults", "Enables malloc"], ans: 1, exp: "typedef creates a clean type alias like Player instead of struct Player." }
+        ],
+        checklist: [
+          "Define a typedef struct representing a NetworkPacket (id, payload_len, flags).",
+          "Initialize using designated initializers {.id = 1, ...}.",
+          "Write a function modify_packet(NetworkPacket *pkt) using arrow operator."
+        ],
+        hint: "Designated initializers {.hp = 50} clarify member assignments.",
+        expectedOut: "Pre-heal HP: 50\nPost-heal HP: 80"
+      },
+      {
+        day: 12, tier: 3, tierName: "Tier 3: Structs & Memory Layout", title: "Struct Padding, Alignment, offsetof & sizeof", time: "25-30m", xp: 100, file: "day12_struct_padding.c",
+        concept: `<p>CPUs access memory most efficiently when data is <strong>aligned</strong> to natural byte boundaries (e.g., 4-byte integers at addresses divisible by 4). To enforce alignment, the compiler silently inserts invisible <strong>padding bytes</strong> between struct fields.</p><p>We use <code>offsetof(struct, member)</code> from <code>&lt;stddef.h&gt;</code> to inspect byte offsets.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stddef.h>\n#include <stdint.h>\n\ntypedef struct {\n    uint8_t flag;   // 1 byte\n    // 3 bytes padding inserted here by compiler!\n    uint32_t id;    // 4 bytes\n    uint8_t status; // 1 byte\n    // 3 bytes padding added at end!\n} UnoptimizedStruct;\n\ntypedef struct {\n    uint32_t id;    // 4 bytes\n    uint8_t flag;   // 1 byte\n    uint8_t status; // 1 byte\n    // 2 bytes trailing padding\n} OptimizedStruct;\n\nint main(void) {\n    printf("Unoptimized sizeof: %zu bytes\\n", sizeof(UnoptimizedStruct));\n    printf("Optimized sizeof: %zu bytes\\n", sizeof(OptimizedStruct));\n    printf("Offset of id in Unoptimized: %zu\\n", offsetof(UnoptimizedStruct, id));\n    return 0;\n}`,
+        ubAlert: "Casting raw socket byte arrays directly into struct pointers without accounting for struct padding causes memory corruption and alignment UB.",
+        quiz: [
+          { q: "Why does the C compiler insert padding inside structs?", opts: ["To pad strings", "To align data fields with CPU bus architecture limits for optimal hardware speed", "To encrypt data", "To hide fields"], ans: 1, exp: "Hardware architectures require multi-byte types to align on matching memory addresses." },
+          { q: "How should you order struct members to minimize wasted padding bytes?", opts: ["Alphabetically", "Largest data types first, down to smallest", "Smallest first", "Randomly"], ans: 1, exp: "Ordering members from largest type size to smallest eliminates internal padding gaps." }
+        ],
+        checklist: [
+          "Create an unoptimized struct with mixed uint8_t and uint64_t types.",
+          "Use sizeof() and offsetof() to print exact byte positions.",
+          "Reorder members by decreasing size and observe reduced sizeof footprint."
+        ],
+        hint: "offsetof(type, member) returns exact byte index of a member relative to struct start.",
+        expectedOut: "Unoptimized sizeof: 12 bytes\nOptimized sizeof: 8 bytes\nOffset of id in Unoptimized: 4"
+      },
+      {
+        day: 13, tier: 3, tierName: "Tier 3: Structs & Memory Layout", title: "Arrays of Structs & Nested Struct Ownership", time: "25-30m", xp: 100, file: "day13_struct_arrays.c",
+        concept: `<p>Structs can be arranged into contiguous arrays or contain nested structs as members. Understanding ownership ensures that when a parent struct is updated or cleared, nested fields remain valid in RAM.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n\ntypedef struct {\n    float x, y;\n} Vector2D;\n\ntypedef struct {\n    uint32_t entity_id;\n    Vector2D position;\n} Entity;\n\nvoid print_entities(const Entity *list, size_t count) {\n    for (size_t i = 0; i < count; i++) {\n        printf("Entity #%u Pos: (%.1f, %.1f)\\n", \n               list[i].entity_id, list[i].position.x, list[i].position.y);\n    }\n}\n\nint main(void) {\n    Entity roster[2] = {\n        {.entity_id = 1, .position = {10.0f, 20.0f}},\n        {.entity_id = 2, .position = {50.5f, 99.0f}}\n    };\n    print_entities(roster, 2);\n    return 0;\n}`,
+        ubAlert: "Returning pointers to local nested structs initialized on function stack frames causes dangling pointer UB once the function returns.",
+        quiz: [
+          { q: "How are array elements of type struct layout in RAM?", opts: ["Scattered randomly across heap", "Contiguously back-to-back in memory", "In a linked list", "In stack trees"], ans: 1, exp: "Arrays of structs occupy a single contiguous block of memory." },
+          { q: "Given Entity roster[5], how do you pass entity #2 to a function taking Entity *?", opts: ["roster[2]", "&roster[2]", "*roster[2]", "roster + &2"], ans: 1, exp: "&roster[2] takes address of 3rd element in array." }
+        ],
+        checklist: [
+          "Define a nested struct Vector2D and parent struct Entity.",
+          "Instantiate an array of 3 entities in main().",
+          "Pass array pointer to a display function using const Entity *."
+        ],
+        hint: "Access nested struct fields via parent.child.field (e.g. roster[i].position.x).",
+        expectedOut: "Entity #1 Pos: (10.0, 20.0)\nEntity #2 Pos: (50.5, 99.0)"
+      },
+      {
+        day: 14, tier: 3, tierName: "Tier 3: Structs & Memory Layout", title: "Tagged Unions (enum + union) for Polymorphic Messages", time: "25-30m", xp: 100, file: "day14_tagged_unions.c",
+        concept: `<p>A <code>union</code> overlays all its fields at the <strong>exact same memory address</strong>, taking only as much space as its largest member. Combined with an <code>enum</code> (a <strong>tagged union</strong>), we can represent variant types (e.g. Network packets that can be Login, Chat, or Disconnect events) with zero wasted RAM.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n\ntypedef enum {\n    EVENT_LOGIN,\n    EVENT_CHAT\n} EventType;\n\ntypedef struct {\n    EventType type;\n    union {\n        struct { uint32_t user_id; } login;\n        struct { char msg[32]; } chat;\n    } payload;\n} NetworkEvent;\n\nvoid handle_event(const NetworkEvent *ev) {\n    switch (ev->type) {\n        case EVENT_LOGIN:\n            printf("Login Event! User ID: %u\\n", ev->payload.login.user_id);\n            break;\n        case EVENT_CHAT:\n            printf("Chat Event: '%s'\\n", ev->payload.chat.msg);\n            break;\n    }\n}\n\nint main(void) {\n    NetworkEvent e1 = {.type = EVENT_LOGIN, .payload.login.user_id = 999};\n    handle_event(&e1);\n    return 0;\n}`,
+        ubAlert: "Reading a union member that was not the last member written to is Undefined Behavior in C (type punning rules apply). Always inspect enum tag first.",
+        quiz: [
+          { q: "How much RAM does a union consume?", opts: ["Sum of all member sizes", "Size of its single largest member", "8 bytes fixed", "0 bytes"], ans: 1, exp: "Unions overlay members at address 0x0, using size equal to largest member." },
+          { q: "Why use an enum tag alongside a union?", opts: ["For formatting", "To track which union member is currently active and safe to read", "To allocate heap", "To speed up pointers"], ans: 1, exp: "The enum tag identifies active payload type inside variant events." }
+        ],
+        checklist: [
+          "Define an EventType enum and NetworkEvent tagged union.",
+          "Instantiate login and chat message instances.",
+          "Write a switch-statement dispatcher function based on event tag."
+        ],
+        hint: "Access union fields through ev->payload.member_name.",
+        expectedOut: "Login Event! User ID: 999"
+      },
+      {
+        day: 15, tier: 3, tierName: "Tier 3: Structs & Memory Layout", title: "Function Pointers & Callback Command Dispatch Tables", time: "25-30m", xp: 100, file: "day15_function_pointers.c",
+        concept: `<p>Function names in C are addresses pointing to executable code instructions in the Text segment. A <strong>function pointer</strong> (e.g. <code>void (*cmd_handler)(int)</code>) stores code addresses, allowing us to build dynamic callbacks, sorting algorithms (like standard <code>qsort</code>), and packet dispatch tables.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n\ntypedef void (*CommandHandler)(int arg);\n\nvoid do_attack(int val) { printf("Exec Attack: %d dmg\\n", val); }\nvoid do_defend(int val) { printf("Exec Defend: %d shield\\n", val); }\n\nint compare_ints(const void *a, const void *b) {\n    return (*(const int *)a - *(const int *)b);\n}\n\nint main(void) {\n    CommandHandler dispatch_table[2] = {do_attack, do_defend};\n    dispatch_table[0](50); // Calls do_attack\n    dispatch_table[1](20); // Calls do_defend\n    \n    int nums[4] = {40, 10, 90, 20};\n    qsort(nums, 4, sizeof(int), compare_ints);\n    printf("Sorted: %d, %d, %d, %d\\n", nums[0], nums[1], nums[2], nums[3]);\n    return 0;\n}`,
+        ubAlert: "Calling a function pointer that is NULL or points to invalid RAM causes an instant Segfault or arbitrary code execution vulnerability.",
+        quiz: [
+          { q: "What does standard qsort require as its comparator argument?", opts: ["A string", "A function pointer taking (const void *, const void *)", "A double pointer", "A struct"], ans: 1, exp: "qsort requires a comparator function pointer to compare elements generic-style." },
+          { q: "What is the correct syntax for declaring a function pointer 'fn' taking int and returning void?", opts: ["void fn(int)", "void (*fn)(int)", "void *fn(int)", "int (*fn)(void)"], ans: 1, exp: "void (*fn)(int) declares function pointer fn." }
+        ],
+        checklist: [
+          "Declare two action functions matching signature void(int).",
+          "Create a function pointer dispatch table array.",
+          "Use stdlib qsort with custom comparison callback to sort integers."
+        ],
+        hint: "Parentheses around (*fn_ptr) are mandatory; otherwise compiler treats it as returning a pointer.",
+        expectedOut: "Exec Attack: 50 dmg\nExec Defend: 20 shield\nSorted: 10, 20, 40, 90"
+      },
+
+      // TIER 4: HEAP ALLOCATION, OWNERSHIP & DEBUGGING
+      {
+        day: 16, tier: 4, tierName: "Tier 4: Heap Allocation & Debugging", title: "Stack vs Heap Lifetimes: malloc, calloc & sizeof(*ptr) Idiom", time: "25-30m", xp: 100, file: "day16_heap_malloc.c",
+        concept: `<p>Stack memory is fast but short-lived (freed automatically when functions return). Heap memory persists until explicitly freed with <code>free()</code>. We allocate heap memory using <code>malloc(bytes)</code> (uninitialized garbage) or <code>calloc(count, size)</code> (zero-initialized).</p><p>Always use the defensive idiom: <code>p = malloc(count * sizeof(*p))</code>.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    size_t count = 5;\n    // Defensive sizeof(*arr) idiom prevents type mismatch bugs\n    int *arr = malloc(count * sizeof(*arr));\n    if (arr == NULL) {\n        perror("Allocation failed");\n        return 1;\n    }\n    \n    for (size_t i = 0; i < count; i++) {\n        arr[i] = (int)(i + 1) * 10;\n        printf("arr[%zu] = %d\\n", i, arr[i]);\n    }\n    \n    free(arr);\n    arr = NULL; // Prevent dangling pointer reuse!\n    return 0;\n}`,
+        ubAlert: "Failing to check if malloc returned NULL before dereferencing leads to NULL pointer dereference crashes when memory is exhausted.",
+        quiz: [
+          { q: "What is the key difference between malloc and calloc?", opts: ["malloc is on stack", "calloc initializes allocated memory bytes to zero", "malloc frees automatically", "calloc is slower"], ans: 1, exp: "calloc zeroes memory; malloc leaves raw uninitialized memory garbage." },
+          { q: "Why use malloc(n * sizeof(*p)) instead of malloc(n * sizeof(int))?", opts: ["It runs faster", "If p's type changes later, sizeof(*p) automatically updates correctly", "It prevents heap", "It frees RAM"], ans: 1, exp: "sizeof(*p) dynamically binds allocation size to pointer type, eliminating maintenance bugs." }
+        ],
+        checklist: [
+          "Allocate a dynamic integer array of 5 elements using malloc.",
+          "Check for NULL return value explicitly.",
+          "Free allocated memory and immediately set pointer to NULL."
+        ],
+        hint: "Setting arr = NULL right after free(arr) guards against accidental double-free bugs.",
+        expectedOut: "arr[0] = 10\narr[1] = 20\narr[2] = 30\narr[3] = 40\narr[4] = 50"
+      },
+      {
+        day: 17, tier: 4, tierName: "Tier 4: Heap Allocation & Debugging", title: "Dynamic Resizing with realloc & Safe Temp Pointer Pattern", time: "25-30m", xp: 100, file: "day17_realloc_pattern.c",
+        concept: `<p>When building dynamic arrays or growable buffers, <code>realloc</code> resizes existing heap allocations. If <code>realloc</code> fails, it returns <code>NULL</code>, leaving original memory intact. Therefore, you must <strong>never assign realloc directly back to original pointer</strong> (<code>p = realloc(p, ...)</code>)—doing so causes a severe memory leak!</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n\nint main(void) {\n    size_t capacity = 2;\n    int *buf = malloc(capacity * sizeof(*buf));\n    buf[0] = 10; buf[1] = 20;\n    \n    // GROW BUFFER SAFELY USING TEMP POINTER PATTERN\n    size_t new_cap = capacity * 2;\n    int *temp = realloc(buf, new_cap * sizeof(*temp));\n    if (temp == NULL) {\n        free(buf); // Cleanup original memory on failure\n        return 1;\n    }\n    buf = temp; // Safe swap\n    buf[2] = 30; buf[3] = 40;\n    \n    printf("Resized cap: %zu, buf[3] = %d\\n", new_cap, buf[3]);\n    free(buf);\n    return 0;\n}`,
+        ubAlert: "Writing buf = realloc(buf, new_size) creates a memory leak if realloc returns NULL, losing the reference to original heap allocation.",
+        quiz: [
+          { q: "What happens if realloc(ptr, new_size) fails?", opts: ["It frees ptr", "It returns NULL, leaving original memory block allocated and untouched", "It crashes", "It clears stack"], ans: 1, exp: "realloc leaves original memory block intact if allocation fails." },
+          { q: "Why store realloc result in a temporary pointer first?", opts: ["To speed up CPU", "To prevent losing original pointer reference if realloc returns NULL", "Required by standard", "To enable memset"], ans: 1, exp: "Temp pointer pattern guarantees zero memory leaks if realloc fails." }
+        ],
+        checklist: [
+          "Allocate buffer for 2 ints using malloc.",
+          "Resize buffer to 4 ints using temporary pointer realloc pattern.",
+          "Verify grown capacity and free buffer cleanly."
+        ],
+        hint: "int *temp = realloc(buf, new_size); if (temp) buf = temp;",
+        expectedOut: "Resized cap: 4, buf[3] = 40"
+      },
+      {
+        day: 18, tier: 4, tierName: "Tier 4: Heap Allocation & Debugging", title: "Eliminating Memory Leaks, Double-Free & Use-After-Free", time: "25-30m", xp: 100, file: "day18_memory_leaks.c",
+        concept: `<p>Heap bugs are the leading cause of security vulnerabilities and server crashes:</p><ul><li><strong>Memory Leak</strong>: Heap memory allocated without corresponding <code>free()</code> before reference is lost.</li><li><strong>Double Free</strong>: Calling <code>free()</code> twice on the same address corrupts heap metadata.</li><li><strong>Use-After-Free (UAF)</strong>: Reading/Writing pointer memory after calling <code>free()</code>.</li></ul>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n\nvoid safe_free(void **pptr) {\n    if (pptr && *pptr) {\n        free(*pptr);\n        *pptr = NULL; // Prevents double-free & use-after-free!\n    }\n}\n\nint main(void) {\n    int *data = malloc(sizeof(*data));\n    *data = 42;\n    \n    safe_free((void **)&data);\n    \n    // Calling safe_free a second time is now completely safe!\n    safe_free((void **)&data);\n    printf("Data pointer safely cleared to NULL\\n");\n    return 0;\n}`,
+        ubAlert: "free(NULL) is a safe no-op in C, but double freeing a non-NULL pointer corrupts heap manager glibc metadata structures.",
+        quiz: [
+          { q: "What is Use-After-Free (UAF)?", opts: ["Freeing NULL", "Accessing RAM through a pointer after that memory block was freed", "Leaking memory", "Stack overflow"], ans: 1, exp: "Use-After-Free occurs when accessing memory after calling free()." },
+          { q: "What happens when calling free(NULL) in C?", opts: ["Segmentation fault", "Nothing (it is a safe no-op defined by C standard)", "Memory leak", "Warning"], ans: 1, exp: "The C standard specifies that free(NULL) does nothing safely." }
+        ],
+        checklist: [
+          "Write a safe_free helper function taking double pointer void **.",
+          "Verify that safe_free sets caller pointer to NULL.",
+          "Demonstrate that calling safe_free twice does not crash."
+        ],
+        hint: "Always set pointers to NULL immediately after freeing them.",
+        expectedOut: "Data pointer safely cleared to NULL"
+      },
+      {
+        day: 19, tier: 4, tierName: "Tier 4: Heap Allocation & Debugging", title: "Hunting Bugs with AddressSanitizer & UndefinedBehaviorSanitizer", time: "25-30m", xp: 100, file: "day19_sanitizers.c",
+        concept: `<p>Modern GCC and Clang compilers include built-in diagnostic weaponry: <strong>AddressSanitizer (ASan)</strong> and <strong>UndefinedBehaviorSanitizer (UBSan)</strong>. Compiling with <code>-fsanitize=address,undefined -g</code> instruments your executable to catch memory leaks, out-of-bound reads, and integer overflows at runtime with exact line numbers.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n\nvoid trigger_leak(void) {\n    int *leak = malloc(64); // Never freed!\n    leak[0] = 1337;\n    (void)leak;\n}\n\nint main(void) {\n    printf("Compiling with -fsanitize=address,undefined detects leaks automatically!\\n");\n    // Uncomment below to trigger ASan report:\n    // trigger_leak();\n    return 0;\n}`,
+        ubAlert: "Never ship binaries compiled with -fsanitize flags to production; sanitizers add CPU overhead and memory shadow tracking.",
+        quiz: [
+          { q: "What compiler flag enables AddressSanitizer?", opts: ["-O3", "-fsanitize=address", "-Wall", "-g3"], ans: 1, exp: "-fsanitize=address enables runtime memory check instrumentation." },
+          { q: "What does UBSan detect?", opts: ["Network drops", "Undefined behavior like signed integer overflow or invalid bit shifts", "Syntax errors", "Slow code"], ans: 1, exp: "UBSan detects undefined runtime behaviors." }
+        ],
+        checklist: [
+          "Compile current file with gcc -std=c17 -g -fsanitize=address,undefined.",
+          "Observe clean execution when zero leaks exist.",
+          "Intentionally trigger a small memory leak and examine ASan error report."
+        ],
+        hint: "ASan outputs detailed leak reports showing exact call stacks where leaked memory was allocated.",
+        expectedOut: "Compiling with -fsanitize=address,undefined detects leaks automatically!"
+      },
+      {
+        day: 20, tier: 4, tierName: "Tier 4: Heap Allocation & Debugging", title: "Interactive Debugging in GDB & LLDB (break, run, step, x/16xb)", time: "25-30m", xp: 100, file: "day20_gdb_lldb.c",
+        concept: `<p>Command-line debuggers (GDB on Linux, LLDB on macOS) allow you to freeze program execution, inspect register states, and read raw memory cells byte-by-byte. Key commands:</p><ul><li><code>break main</code>: Set breakpoint at main function.</li><li><code>run</code> / <code>next</code> / <code>step</code>: Execute, step over, or step into code.</li><li><code>x/16xb ptr</code>: Examine 16 bytes of RAM at pointer in hex.</li></ul>`,
+        codeSnippet: `#include <stdio.h>\n\nint calculate_hash(const char *key) {\n    int hash = 5381;\n    while (*key) {\n        hash = ((hash << 5) + hash) + *key;\n        key++;\n    }\n    return hash;\n}\n\nint main(void) {\n    const char *secret = "SECRET_KEY";\n    int h = calculate_hash(secret);\n    printf("Key: %s -> Hash: %d\\n", secret, h);\n    return 0;\n}`,
+        ubAlert: "Debugging stripped production binaries without debug symbols (-g) hides variable names and line numbers in debuggers.",
+        quiz: [
+          { q: "In GDB/LLDB, what does command x/16xb ptr do?", opts: ["Exits debugger", "Examines 16 bytes in hex format starting at memory address ptr", "Frees 16 bytes", "Executes 16 instructions"], ans: 1, exp: "x/16xb examines memory formatted as hex bytes." },
+          { q: "Which compiler flag is required to include source line symbols for debuggers?", opts: ["-O2", "-g", "-std=c17", "-c"], ans: 1, exp: "-g generates DWARF debug symbols for GDB/LLDB." }
+        ],
+        checklist: [
+          "Compile program with -g debug symbols flag.",
+          "Launch executable inside debugger (gdb ./day20 or lldb ./day20).",
+          "Set breakpoint at main, run, and step through loop lines."
+        ],
+        hint: "In GDB/LLDB, typing `p secret` prints string pointer address and contents.",
+        expectedOut: "Key: SECRET_KEY -> Hash: 1428574619"
+      },
+
+      // TIER 5: BITS, ENDIANNESS & BINARY PROTOCOLS
+      {
+        day: 21, tier: 5, tierName: "Tier 5: Bits & Network Protocols", title: "Fixed-Width Types (<stdint.h>) & Integer Promotion Traps", time: "25-30m", xp: 100, file: "day21_stdint_promotions.c",
+        concept: `<p>Standard C types like <code>int</code> vary in size across platforms (16-bit, 32-bit, or 64-bit). In systems and cybersecurity programming, we use explicit fixed-width integer types from <code>&lt;stdint.h&gt;</code>: <code>uint8_t</code>, <code>uint16_t</code>, <code>uint32_t</code>, and <code>uint64_t</code>.</p><p>Beware of C's <strong>integer promotion rules</strong>: small types smaller than <code>int</code> are automatically promoted to signed <code>int</code> during arithmetic!</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <inttypes.h>\n\nint main(void) {\n    uint8_t a = 200;\n    uint8_t b = 100;\n    // Integer promotion promotes a + b to signed int before adding!\n    uint8_t sum = a + b; // Wraps around via modulo 256\n    \n    printf("uint8_t wrapped sum: %" PRIu8 "\\n", sum);\n    printf("sizeof(uint32_t): %zu bytes\\n", sizeof(uint32_t));\n    return 0;\n}`,
+        ubAlert: "Signed integer overflow is Undefined Behavior in C. Unsigned integer overflow is fully defined by standard to wrap around modulo 2^N.",
+        quiz: [
+          { q: "Which type guarantees exactly 32 unsigned bits regardless of CPU architecture?", opts: ["unsigned int", "uint32_t", "unsigned long", "size_t"], ans: 1, exp: "uint32_t from <stdint.h> guarantees exactly 32 unsigned bits." },
+          { q: "What macro from <inttypes.h> formats a uint64_t in printf portable across 32-bit and 64-bit OS?", opts: ["%d", "%llu", "PRIu64", "%zu"], ans: 2, exp: "PRIu64 provides portable formatting for uint64_t." }
+        ],
+        checklist: [
+          "Include <stdint.h> and <inttypes.h>.",
+          "Declare uint8_t, uint16_t, and uint32_t variables.",
+          "Print values using PRIu8 and PRIu32 macros."
+        ],
+        hint: "printf(\"Val: %\" PRIu32 \"\\n\", val32);",
+        expectedOut: "uint8_t wrapped sum: 44\nsizeof(uint32_t): 4 bytes"
+      },
+      {
+        day: 22, tier: 5, tierName: "Tier 5: Bits & Network Protocols", title: "Bitwise Operations (&, |, ^, ~, <<, >>) & Packet Flags", time: "25-30m", xp: 100, file: "day22_bitwise_masks.c",
+        concept: `<p>Bitwise operators manipulate raw bit flags inside integers:</p><ul><li><code>&amp;</code> (AND): Mask/check if specific bit is set.</li><li><code>|</code> (OR): Set bit to 1.</li><li><code>^</code> (XOR): Toggle bit.</li><li><code>~</code> (NOT): Invert all bits.</li><li><code>&lt;&lt;</code> / <code>&gt;&gt;</code>: Shift bits left/right.</li></ul>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n\n#define FLAG_READ   (1U << 0) // Bit 0 (0x01)\n#define FLAG_WRITE  (1U << 1) // Bit 1 (0x02)\n#define FLAG_EXEC   (1U << 2) // Bit 2 (0x04)\n\nint main(void) {\n    uint8_t permissions = 0;\n    permissions |= (FLAG_READ | FLAG_EXEC); // Set Read and Exec\n    \n    if (permissions & FLAG_READ) {\n        printf("READ permission ACTIVE\\n");\n    }\n    if (!(permissions & FLAG_WRITE)) {\n        printf("WRITE permission DENIED\\n");\n    }\n    return 0;\n}`,
+        ubAlert: "Shifting a 32-bit integer by 32 or more bits, or shifting negative numbers, causes Undefined Behavior in C.",
+        quiz: [
+          { q: "How do you set bit #3 in an integer flags variable?", opts: ["flags &= (1 << 3)", "flags |= (1U << 3)", "flags ^= (1 << 3)", "flags += 3"], ans: 1, exp: "Bitwise OR (flags |= (1U << 3)) sets specified bit to 1." },
+          { q: "How do you test if bit #2 is set in integer flags?", opts: ["flags & (1U << 2)", "flags | (1U << 2)", "flags == 2", "flags >> 2"], ans: 0, exp: "Bitwise AND (flags & (1U << 2)) evaluates to non-zero if bit is active." }
+        ],
+        checklist: [
+          "Define bitmask constants using shift expressions (1U << n).",
+          "Combine flags using bitwise OR.",
+          "Check active permissions using bitwise AND."
+        ],
+        hint: "Always use unsigned literal shifts (1U << n) to prevent signed promotion UB.",
+        expectedOut: "READ permission ACTIVE\nWRITE permission DENIED"
+      },
+      {
+        day: 23, tier: 5, tierName: "Tier 5: Bits & Network Protocols", title: "Endianness & Network Byte Order (htons, htonl, ntohs, ntohl)", time: "25-30m", xp: 100, file: "day23_endianness.c",
+        concept: `<p>Computers store multi-byte integers in two main byte orders:</p><ul><li><strong>Little-Endian (x86_64/ARM64)</strong>: Least Significant Byte (LSB) stored at lowest RAM address.</li><li><strong>Big-Endian (Network Byte Order)</strong>: Most Significant Byte (MSB) stored first.</li></ul><p>Before sending integers across network sockets, we must convert host ordering to network ordering using <code>htons()</code> (16-bit short) and <code>htonl()</code> (32-bit long).</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <arpa/inet.h>\n\nint main(void) {\n    uint16_t host_port = 8080; // 0x1F90\n    uint16_t net_port = htons(host_port);\n    \n    printf("Host Port (Dec): %u (Hex: 0x%04X)\\n", host_port, host_port);\n    printf("Network Port (Dec): %u (Hex: 0x%04X)\\n", net_port, net_port);\n    printf("Converted back: %u\\n", ntohs(net_port));\n    return 0;\n}`,
+        ubAlert: "Sending multi-byte raw struct fields directly across a TCP socket without calling htons/htonl results in corrupted numbers when host and server endianness differ.",
+        quiz: [
+          { q: "What is Network Byte Order?", opts: ["Little-Endian", "Big-Endian", "ASCII format", "Base64"], ans: 1, exp: "The internet protocol standard mandates Big-Endian byte ordering." },
+          { q: "What does htons(8080) do on an x86_64 Little-Endian machine?", opts: ["Swaps the 2 bytes of the port integer to Big-Endian order", "Compresses port", "Encrypts port", "No-op"], ans: 0, exp: "htons converts host 16-bit short to network Big-Endian byte order." }
+        ],
+        checklist: [
+          "Include <arpa/inet.h>.",
+          "Convert a 16-bit port number using htons and ntohs.",
+          "Convert a 32-bit IP address integer using htonl and ntohl."
+        ],
+        hint: "htons = Host To Network Short (16-bit); htonl = Host To Network Long (32-bit).",
+        expectedOut: "Host Port (Dec): 8080 (Hex: 0x1F90)\nNetwork Port (Dec): 36927 (Hex: 0x901F)\nConverted back: 8080"
+      },
+      {
+        day: 24, tier: 5, tierName: "Tier 5: Bits & Network Protocols", title: "Safe Binary Serialization (Packing/Unpacking Header Buffers)", time: "25-30m", xp: 100, file: "day24_binary_serialization.c",
+        concept: `<p>To transmit structured data safely over networks without struct alignment padding bugs or strict aliasing UB, we serialize fields by manually packing bytes into a raw <code>uint8_t</code> buffer in network order.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <string.h>\n#include <arpa/inet.h>\n\nsize_t pack_header(uint8_t *buf, uint16_t msg_type, uint32_t payload_len) {\n    uint16_t net_type = htons(msg_type);\n    uint32_t net_len = htonl(payload_len);\n    \n    memcpy(buf, &net_type, 2);\n    memcpy(buf + 2, &net_len, 4);\n    return 6; // Total bytes packed\n}\n\nint main(void) {\n    uint8_t packet_wire[6];\n    pack_header(packet_wire, 101, 1024);\n    \n    printf("Packed Wire Buffer Hex: ");\n    for (int i = 0; i < 6; i++) printf("%02X ", packet_wire[i]);\n    printf("\\n");\n    return 0;\n}`,
+        ubAlert: "Type-casting raw buffer pointers directly to struct pointers (e.g. Packet *p = (Packet *)buf) violates C strict aliasing rules and alignment guarantees, leading to hardware traps or optimized bad code.",
+        quiz: [
+          { q: "Why use memcpy to pack integers into byte buffers instead of casting pointers?", opts: ["It is faster", "It avoids strict aliasing and unaligned memory access Undefined Behavior", "Required by GCC", "Compresses data"], ans: 1, exp: "memcpy safely copies bytes across unaligned boundaries while satisfying strict aliasing." },
+          { q: "How many total header bytes are packed for uint16_t + uint32_t fields?", opts: ["4 bytes", "6 bytes", "8 bytes", "12 bytes"], ans: 1, exp: "2 bytes (uint16_t) + 4 bytes (uint32_t) = 6 contiguous payload header bytes." }
+        ],
+        checklist: [
+          "Create a 6-byte uint8_t wire buffer.",
+          "Serialize uint16_t msg_type and uint32_t len into buffer using memcpy and htons/htonl.",
+          "Unpack wire buffer back into host integer variables."
+        ],
+        hint: "Use `memcpy(&net_val, buf + offset, sizeof(net_val))` for unpacking.",
+        expectedOut: "Packed Wire Buffer Hex: 00 65 00 00 04 00"
+      },
+      {
+        day: 25, tier: 5, tierName: "Tier 5: Bits & Network Protocols", title: "Building a Hex + ASCII Memory Dumper (hexdump)", time: "25-30m", xp: 100, file: "day25_hexdump_tool.c",
+        concept: `<p>Hex dumpers are mandatory tools for reverse engineers and network security analysts. They inspect raw binary memory by rendering offset addresses, 16 hex bytes per line, and printable ASCII character equivalents side-by-side.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdint.h>\n#include <ctype.h>\n\nvoid hexdump(const void *ptr, size_t len) {\n    const uint8_t *buf = (const uint8_t *)ptr;\n    for (size_t i = 0; i < len; i += 16) {\n        printf("%08ZX  ", i); // Offset address\n        for (size_t j = 0; j < 16; j++) {\n            if (i + j < len) printf("%02X ", buf[i + j]);\n            else printf("   ");\n        }\n        printf(" |");\n        for (size_t j = 0; j < 16 && (i + j) < len; j++) {\n            uint8_t c = buf[i + j];\n            printf("%c", isprint(c) ? c : '.');\n        }\n        printf("|\\n");\n    }\n}\n\nint main(void) {\n    char secret_payload[] = "C_FORGE: Low-Level Systems & NetProg!";\n    hexdump(secret_payload, sizeof(secret_payload));\n    return 0;\n}`,
+        ubAlert: "Passing non-printable characters directly to printf('%c') can corrupt terminal state or execute ANSI escape sequence traps.",
+        quiz: [
+          { q: "What function from <ctype.h> checks if a byte is a printable ASCII character?", opts: ["isalpha()", "isprint()", "isascii()", "isdigit()"], ans: 1, exp: "isprint() returns true for printable characters (ASCII 32 to 126)." },
+          { q: "Why format offset addresses with %08ZX?", opts: ["To pad with zeros to 8 hex digits", "To print floats", "To clear stack", "For speed"], ans: 0, exp: "%08ZX formats offsets as 8-digit uppercase hex values padded with leading zeroes." }
+        ],
+        checklist: [
+          "Implement custom hexdump function taking const void * and size_t len.",
+          "Format line offsets, 16 hex bytes, and printable ASCII boundaries.",
+          "Test on a string buffer containing mixed printable and non-printable bytes."
+        ],
+        hint: "Use `isprint(c) ? c : '.'` to render non-printable control characters safely as dots.",
+        expectedOut: "00000000  43 5F 46 4F 52 47 45 3A 20 4C 6F 77 2D 4C 65 76  |C_FORGE: Low-Lev|"
+      },
+
+      // TIER 6: SYSTEMS ENGINEERING & POSIX NETWORK PROGRAMMING
+      {
+        day: 26, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "Multi-File Architecture (.h Include Guards, static) & Makefile", time: "25-30m", xp: 100, file: "day26_multifile_make.c",
+        concept: `<p>Real C projects split code into modular <code>.c</code> source files and <code>.h</code> header files with <code>#ifndef</code> include guards. Private helper functions are marked <code>static</code> to restrict internal linkage scope, while a <code>Makefile</code> automates strict compilation pipelines.</p>`,
+        codeSnippet: `/* net_utils.h */\n#ifndef NET_UTILS_H\n#define NET_UTILS_H\n#include <stddef.h>\n\nvoid print_status(const char *msg);\n#endif\n\n/* net_utils.c */\n#include <stdio.h>\n#include "net_utils.h"\n\nstatic void internal_log(void) { /* Private linkage */ }\nvoid print_status(const char *msg) {\n    internal_log();\n    printf("[SYS LOG] %s\\n", msg);\n}\n\n/* main.c */\n#include "net_utils.h"\nint main(void) {\n    print_status("Multi-file engine initialized.");\n    return 0;\n}`,
+        ubAlert: "Omitting header include guards causes duplicate type definition errors when a header is included by multiple source files.",
+        quiz: [
+          { q: "What does marking a top-level C function static do?", opts: ["Makes variable read-only", "Restricts function scope/linkage strictly to its current .c file", "Allocates on heap", "Inlines code"], ans: 1, exp: "static internal linkage prevents symbol name collisions across object files." },
+          { q: "Why use #ifndef HEADER_H include guards in .h files?", opts: ["Increases execution speed", "Prevents double-inclusion compilation errors", "Enables malloc", "Required by POSIX"], ans: 1, exp: "Include guards guarantee header contents are evaluated once per compilation unit." }
+        ],
+        checklist: [
+          "Create header file structure with #ifndef include guards.",
+          "Declare public prototype and define internal static helper function.",
+          "Write a simple Makefile with CC, CFLAGS, all, and clean targets."
+        ],
+        hint: "A basic Makefile format: `all: main.c ; $(CC) $(CFLAGS) main.c -o app`.",
+        expectedOut: "[SYS LOG] Multi-file engine initialized."
+      },
+      {
+        day: 27, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "Command-Line Arguments (argc, argv), Exit Codes & getopt", time: "27", xp: 100, file: "day27_cli_getopt.c",
+        concept: `<p>CLI tools receive arguments via <code>int main(int argc, char *argv[])</code>. We parse command-line flags cleanly using POSIX <code>getopt()</code> from <code>&lt;unistd.h&gt;</code>, returning standard exit codes (<code>EXIT_SUCCESS</code> or <code>EXIT_FAILURE</code>).</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n\nint main(int argc, char *argv[]) {\n    int opt;\n    char *port = "8080";\n    \n    while ((opt = getopt(argc, argv, "p:h")) != -1) {\n        switch (opt) {\n            case 'p': port = optarg; break;\n            case 'h':\n            default:\n                printf("Usage: %s [-p port]\\n", argv[0]);\n                return EXIT_SUCCESS;\n        }\n    }\n    printf("Target server starting on port: %s\\n", port);\n    return EXIT_SUCCESS;\n}`,
+        ubAlert: "Accessing argv[i] when i >= argc causes out-of-bounds array access UB.",
+        quiz: [
+          { q: "What does argc represent in main(int argc, char *argv[])?", opts: ["Array of strings", "Total count of command-line arguments passed to executable", "Exit status", "Pointer to environment"], ans: 1, exp: "argc stores argument count, including executable name at argv[0]." },
+          { q: "What POSIX function parses short command-line option flags?", opts: ["scanf", "getopt", "strtol", "getenv"], ans: 1, exp: "getopt standardizes CLI flag parsing." }
+        ],
+        checklist: [
+          "Inspect argc and print argv[0] executable path.",
+          "Use getopt to parse optional -p <port> argument.",
+          "Return EXIT_SUCCESS upon clean exit."
+        ],
+        hint: "optarg holds argument string for option flags requiring parameters (e.g. 'p:').",
+        expectedOut: "Target server starting on port: 8080"
+      },
+      {
+        day: 28, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "POSIX File Descriptors (open, read, write, close, errno, perror)", time: "25-30m", xp: 100, file: "day28_posix_io.c",
+        concept: `<p>In Unix/Linux, everything is a file. Low-level POSIX I/O operates on integer <strong>File Descriptors (FDs)</strong> via system calls: <code>open()</code>, <code>read()</code>, <code>write()</code>, and <code>close()</code>. Failed system calls return <code>-1</code> and set global <code>errno</code>, which we inspect using <code>perror()</code>.</p>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n#include <fcntl.h>\n#include <errno.h>\n\nint main(void) {\n    int fd = open("test.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);\n    if (fd < 0) {\n        perror("Failed to open file");\n        return EXIT_FAILURE;\n    }\n    \n    const char *msg = "C_FORGE POSIX I/O Bytes\\n";\n    ssize_t bytes_written = write(fd, msg, 23);\n    if (bytes_written < 0) perror("Write error");\n    \n    close(fd);\n    printf("Wrote %zd bytes to file descriptor %d\\n", bytes_written, fd);\n    unlink("test.txt"); // Cleanup temporary file\n    return EXIT_SUCCESS;\n}`,
+        ubAlert: "POSIX read() and write() may read or write FEWER bytes than requested (short reads/writes). Robust network code must handle this inside a retry loop.",
+        quiz: [
+          { q: "What integer file descriptors represent standard input, output, and error in POSIX?", opts: ["1, 2, 3", "0 (stdin), 1 (stdout), 2 (stderr)", "-1, 0, 1", "10, 20, 30"], ans: 1, exp: "FD 0 is stdin, 1 is stdout, 2 is stderr." },
+          { q: "How do system call functions indicate errors in POSIX?", opts: ["Return 0", "Return -1 and populate global 'errno'", "Throw exception", "Exit program"], ans: 1, exp: "POSIX syscalls return -1 on error and set errno." }
+        ],
+        checklist: [
+          "Open file using low-level POSIX open() flags.",
+          "Perform bounds-checked write() call and verify return length.",
+          "Check errno and call close(fd) cleanly."
+        ],
+        hint: "Include <fcntl.h> for O_WRONLY, O_CREAT flags.",
+        expectedOut: "Wrote 23 bytes to file descriptor 3"
+      },
+      {
+        day: 29, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "Modern TCP Client (getaddrinfo, socket, connect, send_all, recv)", time: "25-30m", xp: 100, file: "day29_tcp_client.c",
+        concept: `<p>A modern POSIX TCP Client connects to servers via 5 primary syscalls:</p><ol><li><code>getaddrinfo()</code>: Domain/IP resolution.</li><li><code>socket()</code>: Create TCP socket file descriptor.</li><li><code>connect()</code>: Perform 3-way TCP handshake.</li><li><code>send_all()</code>: Loop until full payload is transmitted.</li><li><code>recv()</code>: Read incoming socket stream.</li></ol>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n#include <sys/types.h>\n#include <sys/socket.h>\n#include <netdb.h>\n\nssize_t send_all(int sockfd, const void *buf, size_t len) {\n    size_t total = 0;\n    const char *p = (const char *)buf;\n    while (total < len) {\n        ssize_t n = send(sockfd, p + total, len - total, 0);\n        if (n <= 0) return n; // Error or disconnect\n        total += n;\n    }\n    return (ssize_t)total;\n}\n\nint main(void) {\n    printf("TCP Client send_all architecture verified!\\n");\n    return EXIT_SUCCESS;\n}`,
+        ubAlert: "Assuming a single send() call transmits your entire buffer is a critical networking bug. TCP is a byte stream, not a datagram protocol.",
+        quiz: [
+          { q: "Why is a send_all loop required when transmitting socket data?", opts: ["TCP is faster", "send() may transmit only partial bytes depending on kernel buffer availability", "Required by C standard", "Encrypts data"], ans: 1, exp: "send() may accept only partial bytes; loops guarantee complete transmission." },
+          { q: "What function resolves hostnames to socket IP structures in modern C?", opts: ["gethostbyname (obsolete)", "getaddrinfo", "inet_addr", "connect"], ans: 1, exp: "getaddrinfo is the modern, thread-safe POSIX address resolver." }
+        ],
+        checklist: [
+          "Implement defensive send_all loop function.",
+          "Set up addrinfo hints structure for AF_UNSPEC and SOCK_STREAM.",
+          "Verify socket setup and cleanup code compiles under strict flags."
+        ],
+        hint: "Set hints.ai_socktype = SOCK_STREAM for TCP sockets.",
+        expectedOut: "TCP Client send_all architecture verified!"
+      },
+      {
+        day: 30, tier: 6, tierName: "Tier 6: POSIX Network Programming", title: "Modern TCP Echo Server (bind, listen, accept, SO_REUSEADDR)", time: "25-30m", xp: 100, file: "day30_tcp_server.c",
+        concept: `<p>A modern POSIX TCP Concurrent Server binds to a port, listens for connections, and accepts client sockets:</p><ol><li><code>setsockopt(..., SO_REUSEADDR)</code>: Prevents "Address already in use" bind errors upon restart.</li><li><code>bind()</code>: Binds IP + Port to listening socket.</li><li><code>listen()</code>: Enables connection backlog queue.</li><li><code>accept()</code>: Blocks until client connects, returning a dedicated client communication FD.</li></ol>`,
+        codeSnippet: `#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\n\nint main(void) {\n    int server_fd = socket(AF_INET, SOCK_STREAM, 0);\n    if (server_fd < 0) { perror("Socket failed"); return 1; }\n    \n    int opt = 1;\n    // PREVENT ADDRESS LOCKED ON RESTART\n    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));\n    \n    struct sockaddr_in addr = {\n        .sin_family = AF_INET,\n        .sin_addr.s_addr = INADDR_ANY,\n        .sin_port = htons(8080)\n    };\n    \n    if (bind(server_fd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {\n        perror("Bind failed"); close(server_fd); return 1;\n    }\n    \n    printf("Server bound to 0.0.0.0:8080 successfully! Listening...\\n");\n    close(server_fd);\n    return 0;\n}`,
+        ubAlert: "Failing to set SO_REUSEADDR causes bind() to fail with error EADDRINUSE if server is restarted while sockets remain in TIME_WAIT state.",
+        quiz: [
+          { q: "What socket option prevents 'Address already in use' errors during server restarts?", opts: ["SO_KEEPALIVE", "SO_REUSEADDR", "SO_LINGER", "SO_BROADCAST"], ans: 1, exp: "SO_REUSEADDR allows binding to local ports in TIME_WAIT state." },
+          { q: "What does accept() return?", opts: ["Status 0", "A new client socket file descriptor dedicated to that connection", "Server port", "IP address string"], ans: 1, exp: "accept() creates and returns a distinct client socket FD for data transfer." }
+        ],
+        checklist: [
+          "Create TCP socket using socket(AF_INET, SOCK_STREAM, 0).",
+          "Enable SO_REUSEADDR option via setsockopt.",
+          "Bind socket to port 8080 and prepare listen queue."
+        ],
+        hint: "Always check `if (server_fd < 0)` for errors on socket calls.",
+        expectedOut: "Server bound to 0.0.0.0:8080 successfully! Listening..."
+      }
+    ];
+
+    /* ==========================================================================
+       2. CAPSTONE BOSS RAIDS DATA STORE
+       ========================================================================== */
+    const BOSS_RAIDS_DATA = [
+      {
+        id: "boss1", tier: "Tier 4 Capstone", title: "Boss Raid I: Dynamic ByteBuffer Library", file: "raid1_bytebuf.c", xp: 300,
+        desc: "Build a dynamic byte-buffer abstraction (ByteBuf) in C using amortized doubling realloc. Must support appending raw integers in network byte order and pass zero-leak verification under AddressSanitizer.",
+        specs: ["Amortized growth (capacity * 2) dynamic allocation.", "Append uint16_t and uint32_t converting to Big-Endian network order.", "Zero memory leaks or out-of-bound errors under ASan."],
+        cmd: "gcc -std=c17 -Wall -Wextra -g -fsanitize=address,undefined raid1_bytebuf.c -o raid1 && ./raid1"
+      },
+      {
+        id: "boss2", tier: "Tier 5 Capstone", title: "Boss Raid II: Binary Packet Inspector (Mini-Wireshark)", file: "raid2_inspector.c", xp: 400,
+        desc: "Build a CLI binary payload inspector that reads raw byte streams, parses custom header framing fields, validates CRC/checksum flags, and renders formatted side-by-side Hex + ASCII memory dumps.",
+        specs: ["Safely unpack unaligned binary headers without strict aliasing UB.", "Validate bitmask flag bit fields.", "Render 16-byte aligned Hex + ASCII side-by-side output."],
+        cmd: "gcc -std=c17 -Wall -Wextra -g -fsanitize=address,undefined raid2_inspector.c -o raid2 && ./raid2"
+      },
+      {
+        id: "boss3", tier: "Tier 6 Capstone", title: "Boss Raid III: Multi-Client TCP Server (POSIX poll)", file: "raid3_chat_server.c", xp: 500,
+        desc: "Build a single-threaded concurrent TCP Server using POSIX poll() to multiplex I/O across multiple connected clients without blocking. Handles broadcast messages and clean disconnects.",
+        specs: ["Non-blocking socket setup with SO_REUSEADDR.", "Single-threaded I/O multiplexing via POSIX poll().", "Robust send_all loop and clean client teardown."],
+        cmd: "gcc -std=c17 -Wall -Wextra -g -fsanitize=address,undefined raid3_chat_server.c -o raid3 && ./raid3"
+      },
+      {
+        id: "boss4", tier: "Tier 6 Final Capstone", title: "Boss Raid IV: Terminal RPG Combat & Engine", file: "raid4_rpg_engine.c", xp: 600,
+        desc: "Build a modular multi-file terminal RPG engine utilizing structs, tagged unions for spells/items, function pointer dispatch tables, and binary file save/load I/O.",
+        specs: ["Multi-file structure with clean .h include guards.", "Tagged union spell/item inventory system.", "Function pointer action dispatch table.", "Binary save file fopen/fwrite/fread system."],
+        cmd: "make -f Makefile_rpg && ./rpg_game"
+      }
+    ];
+
+    /* ==========================================================================
+       3. APP STATE & LOCALSTORAGE PERSISTENCE
+       ========================================================================== */
+    let appState = {
+      currentDay: 1,
+      completedDays: [], // array of day numbers
+      completedRaids: [], // array of raid IDs
+      xp: 0,
+      streak: 1,
+      lastLoginDate: new Date().toISOString().slice(0, 10),
+      notes: {}, // day -> note string
+      compilerOS: 'gcc'
+    };
+
+    // Load from LocalStorage
+    function loadUserData() {
+      const saved = localStorage.getItem('C_FORGE_USER_DATA');
+      if (saved) {
+        try {
+          appState = Object.assign(appState, JSON.parse(saved));
+        } catch(e) { console.error("Failed to parse saved state", e); }
+      }
+      updateGlobalUI();
+    }
+
+    function saveUserData() {
+      localStorage.setItem('C_FORGE_USER_DATA', JSON.stringify(appState));
+      updateGlobalUI();
+    }
+
+    /* ==========================================================================
+       4. TIMER SYSTEM (WITH AUDIO SYNTHESIZER CHIME)
+       ========================================================================== */
+    let timerInterval = null;
+    let timerSeconds = 20 * 60; // 20m default
+    let isTimerRunning = false;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      document.getElementById('timer-display').innerText = formatTime(timerSeconds);
+    }
+
+    function toggleTimer() {
+      if (isTimerRunning) {
+        clearInterval(timerInterval);
+        isTimerRunning = false;
+        document.getElementById('icon-play').classList.remove('hidden');
+        document.getElementById('icon-pause').classList.add('hidden');
+      } else {
+        isTimerRunning = true;
+        document.getElementById('icon-play').classList.add('hidden');
+        document.getElementById('icon-pause').classList.remove('hidden');
+        timerInterval = setInterval(() => {
+          if (timerSeconds > 0) {
+            timerSeconds--;
+            updateTimerDisplay();
+          } else {
+            clearInterval(timerInterval);
+            isTimerRunning = false;
+            document.getElementById('icon-play').classList.remove('hidden');
+            document.getElementById('icon-pause').classList.add('hidden');
+            playTimerChime();
+          }
+        }, 1000);
+      }
+    }
+
+    function resetTimer() {
+      if (isTimerRunning) toggleTimer();
+      timerSeconds = 20 * 60;
+      updateTimerDisplay();
+    }
+
+    function playTimerChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.3); // C6
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.5);
+      } catch (e) { console.log(e); }
+    }
+
+    /* ==========================================================================
+       5. XP, RANK & GLOBAL UI UPDATES
+       ========================================================================== */
+    const RANKS = [
+      { minXp: 0, title: "Stack Novice" },
+      { minXp: 500, title: "Pointer Tactician" },
+      { minXp: 1200, title: "Heap Architect" },
+      { minXp: 2000, title: "Byte Smith" },
+      { minXp: 2800, title: "Socket Forger" },
+      { minXp: 3500, title: "Systems Engineer" }
+    ];
+
+    function calculateRank(xp) {
+      let r = RANKS[0].title;
+      for (let i = 0; i < RANKS.length; i++) {
+        if (xp >= RANKS[i].minXp) r = RANKS[i].title;
+      }
+      return r;
+    }
+
+    function updateGlobalUI() {
+      // Calculate total XP
+      let totalXp = appState.completedDays.length * 100;
+      appState.completedRaids.forEach(rid => {
+        const r = BOSS_RAIDS_DATA.find(b => b.id === rid);
+        if (r) totalXp += r.xp;
+      });
+      appState.xp = totalXp;
+
+      // Update XP & Rank UI
+      document.getElementById('xp-val').innerText = appState.xp;
+      const rank = calculateRank(appState.xp);
+      document.getElementById('player-rank').innerText = rank;
+
+      const pct = Math.round((appState.completedDays.length / 30) * 100);
+      document.getElementById('completion-pct').innerText = `${pct}% Complete`;
+      document.getElementById('xp-bar-fill').style.width = `${Math.min(pct, 100)}%`;
+      document.getElementById('streak-val').innerText = appState.streak;
+
+      // Resume active quest button text
+      const nextDay = appState.completedDays.length >= 30 ? 30 : (appState.completedDays.length + 1);
+      document.getElementById('btn-resume-lbl').innerText = `RESUME DAY ${nextDay} QUEST`;
+
+      renderCurriculumTree();
+      renderRoadmapView();
+    }
+
+    /* ==========================================================================
+       6. NAVIGATION & TAB SWITCHING
+       ========================================================================== */
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.remove('active-tab', 'text-forge-cyan', 'border-forge-cyan');
+        btn.classList.add('text-gray-400', 'border-transparent');
+      });
+      document.getElementById(`tab-btn-${tabId}`).classList.add('active-tab', 'text-forge-cyan', 'border-forge-cyan');
+
+      document.getElementById('view-workspace').classList.add('hidden');
+      document.getElementById('view-roadmap').classList.add('hidden');
+      document.getElementById('view-labs').classList.add('hidden');
+      document.getElementById('view-armory').classList.add('hidden');
+
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+      const sidebar = document.getElementById('sidebar-curriculum');
+      if (tabId === 'workspace') {
+        sidebar.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('hidden');
+      }
+    }
+
+    function resumeActiveQuest() {
+      const active = appState.completedDays.length >= 30 ? 30 : (appState.completedDays.length + 1);
+      loadDayWorkspace(active);
+      switchTab('workspace');
+    }
+
+    /* ==========================================================================
+       7. CURRICULUM SIDEBAR & SEARCH
+       ========================================================================== */
+    function renderCurriculumTree() {
+      const container = document.getElementById('curriculum-tree');
+      container.innerHTML = '';
+
+      let currentTier = 0;
+      CURRICULUM_DATA.forEach(d => {
+        if (d.tier !== currentTier) {
+          currentTier = d.tier;
+          const tierHeader = document.createElement('div');
+          tierHeader.className = "pt-2 pb-1 text-[10px] font-bold text-forge-cyan uppercase tracking-wider border-b border-gray-800/80 mb-1 flex items-center justify-between";
+          tierHeader.innerHTML = `<span>Tier ${d.tier}</span>`;
+          container.appendChild(tierHeader);
+        }
+
+        const isDone = appState.completedDays.includes(d.day);
+        const isActive = appState.currentDay === d.day;
+
+        const dayItem = document.createElement('div');
+        dayItem.onclick = () => loadDayWorkspace(d.day);
+        dayItem.className = `p-2 rounded-lg cursor-pointer transition-all flex items-center justify-between border ${
+          isActive 
+            ? 'bg-cyan-950/40 border-forge-cyan/50 text-white font-bold shadow-md' 
+            : isDone 
+              ? 'bg-emerald-950/20 border-emerald-500/30 text-gray-300 hover:bg-gray-800' 
+              : 'bg-gray-900/50 border-gray-800/60 text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+        }`;
+
+        dayItem.innerHTML = `
+          <div class="flex items-center space-x-2 truncate">
+            <span class="w-2 h-2 rounded-full ${isDone ? 'bg-forge-emerald' : isActive ? 'bg-forge-cyan animate-pulse' : 'bg-gray-700'}"></span>
+            <span class="truncate">D${d.day.toString().padStart(2, '0')}: ${d.title}</span>
+          </div>
+          ${isDone ? '<span class="text-forge-emerald text-[10px]">✓</span>' : ''}
+        `;
+        container.appendChild(dayItem);
+      });
+    }
+
+    function filterCurriculum() {
+      const q = document.getElementById('curriculum-search').value.toLowerCase();
+      const items = document.querySelectorAll('#curriculum-tree > div');
+      items.forEach(el => {
+        if (el.innerText.toLowerCase().includes(q)) {
+          el.style.display = '';
+        } else {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    /* ==========================================================================
+       8. WORKSPACE RENDERING & DAY LOAD
+       ========================================================================== */
+    function loadDayWorkspace(dayNum) {
+      const data = CURRICULUM_DATA.find(d => d.day === dayNum);
+      if (!data) return;
+
+      appState.currentDay = dayNum;
+      saveUserData();
+
+      // Meta updates
+      document.getElementById('qw-tier-badge').innerText = data.tierName;
+      document.getElementById('qw-day-badge').innerText = `DAY ${data.day.toString().padStart(2, '0')} OF 30`;
+      document.getElementById('qw-time').innerText = data.time;
+      document.getElementById('qw-xp').innerText = `+${data.xp} XP`;
+      document.getElementById('qw-file').innerText = data.file;
+      document.getElementById('qw-title').innerText = data.title;
+
+      // Concept
+      document.getElementById('qw-concept-text').innerHTML = data.concept;
+      document.getElementById('qw-code-snippet').innerHTML = highlightCSyntax(data.codeSnippet);
+      document.getElementById('qw-ub-alert').innerText = data.ubAlert;
+
+      // Quiz
+      renderQuiz(data.quiz);
+
+      // Lab Checklist
+      const chkList = document.getElementById('qw-lab-checklist');
+      chkList.innerHTML = '';
+      data.checklist.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = "flex items-start space-x-2 bg-gray-950 p-2 rounded border border-gray-800/80";
+        li.innerHTML = `
+          <input type="checkbox" id="chk-lab-${idx}" class="mt-0.5 rounded border-gray-700 bg-gray-900 text-forge-cyan focus:ring-0">
+          <label for="chk-lab-${idx}" class="text-gray-300 select-none">${item}</label>
+        `;
+        chkList.appendChild(li);
+      });
+
+      // Compiler command
+      updateCompileCmdDisplay(data.file);
+
+      // Expected Out & Hint
+      document.getElementById('qw-expected-out').innerText = data.expectedOut;
+      document.getElementById('qw-coach-hint').innerText = data.hint;
+
+      // Note text area
+      const savedNote = appState.notes[dayNum] || '';
+      const noteElem = document.getElementById('qw-next-set-note');
+      noteElem.value = savedNote;
+      noteElem.oninput = (e) => {
+        appState.notes[dayNum] = e.target.value;
+        saveUserData();
+      };
+
+      // Button states
+      const isDone = appState.completedDays.includes(dayNum);
+      const btnComplete = document.getElementById('btn-complete-day');
+      const btnNext = document.getElementById('btn-next-day');
+      const statusLbl = document.getElementById('qw-status-lbl');
+
+      if (isDone) {
+        statusLbl.innerHTML = `Status: <span class="text-forge-emerald font-bold">✓ VERIFIED & COMPLETED</span>`;
+        btnComplete.classList.add('hidden');
+        btnNext.classList.remove('hidden');
+      } else {
+        statusLbl.innerHTML = `Status: <span class="text-amber-400 font-bold">IN PROGRESS</span>`;
+        btnComplete.classList.remove('hidden');
+        btnNext.classList.add('hidden');
+      }
+
+      renderCurriculumTree();
+    }
+
+    function toggleCompilerOS(os) {
+      appState.compilerOS = os;
+      const gccBtn = document.getElementById('btn-comp-gcc');
+      const clangBtn = document.getElementById('btn-comp-clang');
+
+      if (os === 'gcc') {
+        gccBtn.className = "text-forge-cyan font-bold border-b border-forge-cyan";
+        clangBtn.className = "text-gray-500 hover:text-gray-300";
+      } else {
+        clangBtn.className = "text-forge-cyan font-bold border-b border-forge-cyan";
+        gccBtn.className = "text-gray-500 hover:text-gray-300";
+      }
+
+      const currentData = CURRICULUM_DATA.find(d => d.day === appState.currentDay);
+      if (currentData) updateCompileCmdDisplay(currentData.file);
+    }
+
+    function updateCompileCmdDisplay(filename) {
+      const outName = filename.replace('.c', '');
+      const cmdElem = document.getElementById('qw-compile-cmd');
+      if (appState.compilerOS === 'gcc') {
+        cmdElem.innerText = `gcc -std=c17 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined ${filename} -o ${outName} && ./${outName}`;
+      } else {
+        cmdElem.innerText = `clang -std=c17 -Wall -Wextra -Wpedantic -g -fsanitize=address,undefined ${filename} -o ${outName} && ./${outName}`;
+      }
+    }
+
+    function copyCompileCmd() {
+      const text = document.getElementById('qw-compile-cmd').innerText;
+      copyToClipboard(text);
+    }
+
+    function copyCodeBlock(id) {
+      const elem = document.getElementById(id);
+      if (elem) copyToClipboard(elem.innerText);
+    }
+
+    function copyToClipboard(text) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+
+    /* Syntax Highlighter */
+    function highlightCSyntax(code) {
+      let escaped = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      
+      // Comments
+      escaped = escaped.replace(/(\/\/[^\n]*)/g, '<span class="c-comment">$1</span>');
+      // Preprocessor
+      escaped = escaped.replace(/(#include\s+&lt;[^&]+&gt;|#define\s+\w+|#ifndef\s+\w+|#endif)/g, '<span class="c-pre">$1</span>');
+      // Keywords
+      escaped = escaped.replace(/\b(return|if|else|for|while|switch|case|break|typedef|struct|union|enum|const|static)\b/g, '<span class="c-kw">$1</span>');
+      // Types
+      escaped = escaped.replace(/\b(int|char|void|size_t|uint8_t|uint16_t|uint32_t|uint64_t|float|double|long|Player|Entity|Vector2D|NetworkEvent|EventType)\b/g, '<span class="c-type">$1</span>');
+      // Strings
+      escaped = escaped.replace(/("[^"]*")/g, '<span class="c-str">$1</span>');
+      // Numbers
+      escaped = escaped.replace(/\b(\d+|0x[0-9A-Fa-f]+)\b/g, '<span class="c-num">$1</span>');
+
+      return escaped;
+    }
+
+    /* ==========================================================================
+       9. QUIZ DIAGNOSTICS & VERIFICATION
+       ========================================================================== */
+    function renderQuiz(quizArray) {
+      const container = document.getElementById('qw-quiz-container');
+      container.innerHTML = '';
+
+      quizArray.forEach((q, qIdx) => {
+        const qBox = document.createElement('div');
+        qBox.className = "bg-gray-950 border border-gray-800 rounded-lg p-3.5 space-y-2";
+
+        let optionsHTML = '';
+        q.opts.forEach((opt, oIdx) => {
+          optionsHTML += `
+            <button onclick="checkQuizAnswer(${qIdx}, ${oIdx})" id="quiz-opt-${qIdx}-${oIdx}" class="w-full text-left bg-gray-900 hover:bg-gray-800 border border-gray-800 p-2 rounded text-gray-300 transition-colors flex items-center justify-between">
+              <span>${String.fromCharCode(65 + oIdx)}. ${opt}</span>
+              <span id="quiz-icon-${qIdx}-${oIdx}" class="text-xs"></span>
+            </button>
+          `;
+        });
+
+        qBox.innerHTML = `
+          <div class="font-bold text-gray-200">Q${qIdx + 1}: ${q.q}</div>
+          <div class="space-y-1.5">${optionsHTML}</div>
+          <div id="quiz-exp-${qIdx}" class="hidden p-2 bg-gray-900 border border-gray-800 rounded text-[11px] text-gray-400">
+            <strong class="text-forge-cyan">Explanation:</strong> ${q.exp}
+          </div>
+        `;
+        container.appendChild(qBox);
+      });
+    }
+
+    function checkQuizAnswer(qIdx, oIdx) {
+      const currentData = CURRICULUM_DATA.find(d => d.day === appState.currentDay);
+      if (!currentData) return;
+      const q = currentData.quiz[qIdx];
+
+      const btn = document.getElementById(`quiz-opt-${qIdx}-${oIdx}`);
+      const exp = document.getElementById(`quiz-exp-${qIdx}`);
+      exp.classList.remove('hidden');
+
+      if (oIdx === q.ans) {
+        btn.classList.add('border-forge-emerald', 'bg-emerald-950/40', 'text-forge-emerald');
+        document.getElementById(`quiz-icon-${qIdx}-${oIdx}`).innerText = '✓ Correct';
+      } else {
+        btn.classList.add('border-forge-crimson', 'bg-crimson-950/40', 'text-forge-crimson');
+        document.getElementById(`quiz-icon-${qIdx}-${oIdx}`).innerText = '✕ Incorrect';
+      }
+    }
+
+    function completeCurrentDay() {
+      if (!appState.completedDays.includes(appState.currentDay)) {
+        appState.completedDays.push(appState.currentDay);
+        saveUserData();
+      }
+      loadDayWorkspace(appState.currentDay);
+    }
+
+    function loadNextQuest() {
+      if (appState.currentDay < 30) {
+        loadDayWorkspace(appState.currentDay + 1);
+      }
+    }
+
+    /* ==========================================================================
+       10. ROADMAP & BOSS RAIDS TAB RENDERING
+       ========================================================================== */
+    function renderRoadmapView() {
+      const container = document.getElementById('roadmap-tier-container');
+      container.innerHTML = '';
+
+      for (let t = 1; t <= 6; t++) {
+        const daysInTier = CURRICULUM_DATA.filter(d => d.tier === t);
+        const tierName = daysInTier[0] ? daysInTier[0].tierName : `Tier ${t}`;
+
+        const tierBlock = document.createElement('div');
+        tierBlock.className = "bg-surface border border-surface-border rounded-xl p-4 space-y-3";
+
+        let daysGridHTML = '';
+        daysInTier.forEach(d => {
+          const isDone = appState.completedDays.includes(d.day);
+          daysGridHTML += `
+            <div onclick="loadDayWorkspace(${d.day}); switchTab('workspace');" class="p-3 bg-gray-950 border ${isDone ? 'border-forge-emerald/40 bg-emerald-950/10' : 'border-gray-800'} rounded-lg cursor-pointer hover:border-forge-cyan transition-all space-y-1">
+              <div class="flex justify-between items-center text-[10px] font-mono">
+                <span class="${isDone ? 'text-forge-emerald font-bold' : 'text-gray-400'}">DAY ${d.day}</span>
+                ${isDone ? '<span class="text-forge-emerald">✓ DONE</span>' : '<span class="text-gray-600">+100 XP</span>'}
+              </div>
+              <div class="text-xs font-bold text-gray-200 line-clamp-1">${d.title}</div>
+            </div>
+          `;
+        });
+
+        tierBlock.innerHTML = `
+          <h3 class="text-sm font-bold text-forge-cyan font-mono uppercase tracking-wider">${tierName}</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">${daysGridHTML}</div>
+        `;
+        container.appendChild(tierBlock);
+      }
+
+      // Render Boss Raids
+      const raidsContainer = document.getElementById('boss-raids-container');
+      raidsContainer.innerHTML = '';
+
+      BOSS_RAIDS_DATA.forEach(r => {
+        const isCompleted = appState.completedRaids.includes(r.id);
+        const card = document.createElement('div');
+        card.className = `bg-gray-950 border ${isCompleted ? 'border-forge-emerald' : 'border-gray-800'} rounded-xl p-4 space-y-3 flex flex-col justify-between`;
+
+        let specsHTML = '';
+        r.specs.forEach(s => {
+          specsHTML += `<li class="text-[11px] text-gray-400 flex items-start space-x-1.5"><span class="text-forge-cyan">•</span><span>${s}</span></li>`;
+        });
+
+        card.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex justify-between items-center text-xs font-mono">
+              <span class="text-forge-crimson font-bold uppercase">${r.tier}</span>
+              <span class="bg-gray-900 text-forge-emerald px-2 py-0.5 rounded border border-forge-emerald/30">+${r.xp} XP</span>
+            </div>
+            <h4 class="font-bold text-base text-white">${r.title}</h4>
+            <p class="text-xs text-gray-300 leading-relaxed font-mono">${r.desc}</p>
+            <ul class="space-y-1 font-mono pt-1">${specsHTML}</ul>
+          </div>
+
+          <div class="pt-3 border-t border-gray-800/80 flex items-center justify-between font-mono text-xs">
+            <code class="text-[10px] text-gray-500 truncate max-w-[200px]">${r.file}</code>
+            <button onclick="toggleBossRaidComplete('${r.id}')" class="${isCompleted ? 'bg-forge-emerald text-black font-bold' : 'bg-gray-800 hover:bg-gray-700 text-gray-300'} px-3 py-1.5 rounded transition-colors">
+              ${isCompleted ? '✓ CLEARED' : 'CLAIM CLEAR'}
+            </button>
+          </div>
+        `;
+        raidsContainer.appendChild(card);
+      });
+    }
+
+    function toggleBossRaidComplete(raidId) {
+      if (appState.completedRaids.includes(raidId)) {
+        appState.completedRaids = appState.completedRaids.filter(id => id !== raidId);
+      } else {
+        appState.completedRaids.push(raidId);
+      }
+      saveUserData();
+    }
+
+    /* ==========================================================================
+       11. INTERACTIVE LAB 1: RAM & POINTER VISUALIZER LOGIC
+       ========================================================================== */
+    let ramState = {
+      hp: null,
+      ptrPointsToHp: false,
+      hpMutated: false,
+      heapAllocated: false,
+      heapValue: null,
+      heapFreed: false
+    };
+
+    function resetRamLab() {
+      ramState = { hp: null, ptrPointsToHp: false, hpMutated: false, heapAllocated: false, heapValue: null, heapFreed: false };
+      document.getElementById('ram-code-line').innerText = '/* Memory cleared */';
+      renderRamTables();
+    }
+
+    function stepRamLab(stepNum) {
+      if (stepNum === 1) {
+        ramState.hp = 100;
+        document.getElementById('ram-code-line').innerText = 'int hp = 100;';
+      } else if (stepNum === 2) {
+        ramState.hp = ramState.hp || 100;
+        ramState.ptrPointsToHp = true;
+        document.getElementById('ram-code-line').innerText = 'int *ptr = &hp; // ptr stores address 0x7FFF5FBFF018';
+      } else if (stepNum === 3) {
+        ramState.hp = 85;
+        ramState.hpMutated = true;
+        document.getElementById('ram-code-line').innerText = '*ptr = 85; // Value at 0x7FFF5FBFF018 updated to 85!';
+      } else if (stepNum === 4) {
+        ramState.heapAllocated = true;
+        ramState.heapFreed = false;
+        document.getElementById('ram-code-line').innerText = 'int *buf = malloc(16); // Allocated 16 bytes at 0x55E28A011240';
+      } else if (stepNum === 5) {
+        ramState.heapAllocated = true;
+        ramState.heapValue = 42;
+        document.getElementById('ram-code-line').innerText = 'buf[0] = 42; // Written to heap offset 0';
+      } else if (stepNum === 6) {
+        ramState.heapFreed = true;
+        document.getElementById('ram-code-line').innerText = 'free(buf); // WARNING: buf is now a DANGLING POINTER holding invalid address!';
+      }
+      renderRamTables();
+    }
+
+    function renderRamTables() {
+      const stackContainer = document.getElementById('ram-stack-table');
+      const heapContainer = document.getElementById('ram-heap-table');
+      stackContainer.innerHTML = '';
+      heapContainer.innerHTML = '';
+
+      // Stack Rows
+      if (ramState.hp !== null) {
+        stackContainer.innerHTML += `
+          <div class="bg-gray-900 p-2 rounded border border-forge-cyan/40 flex justify-between items-center">
+            <div>
+              <span class="text-forge-cyan font-bold">hp</span> (int)
+              <span class="text-[10px] text-gray-500 block font-mono">Addr: 0x7FFF5FBFF018</span>
+            </div>
+            <div class="text-base font-bold ${ramState.hpMutated ? 'text-forge-emerald animate-bounce' : 'text-white'}">Val: ${ramState.hp}</div>
+          </div>
+        `;
+      }
+
+      if (ramState.ptrPointsToHp) {
+        stackContainer.innerHTML += `
+          <div class="bg-gray-900 p-2 rounded border border-forge-cyan flex justify-between items-center">
+            <div>
+              <span class="text-forge-cyan font-bold">ptr</span> (int *)
+              <span class="text-[10px] text-gray-500 block font-mono">Addr: 0x7FFF5FBFF020</span>
+            </div>
+            <div class="text-xs font-bold text-forge-cyan font-mono">Pointers -> 0x7FFF5FBFF018</div>
+          </div>
+        `;
+      }
+
+      if (stackContainer.innerHTML === '') {
+        stackContainer.innerHTML = '<span class="text-gray-600 italic text-[11px]">Stack frame empty</span>';
+      }
+
+      // Heap Rows
+      if (ramState.heapAllocated) {
+        if (ramState.heapFreed) {
+          heapContainer.innerHTML = `
+            <div class="bg-crimson-950/40 p-2 rounded border border-forge-crimson flex justify-between items-center">
+              <div>
+                <span class="text-forge-crimson font-bold">buf</span> (FREED / DANGLING)
+                <span class="text-[10px] text-gray-400 block font-mono">Addr: 0x55E28A011240</span>
+              </div>
+              <div class="text-xs font-bold text-forge-crimson">⚠️ INVALID ACCESS DANGER</div>
+            </div>
+          `;
+        } else {
+          heapContainer.innerHTML = `
+            <div class="bg-purple-950/40 p-2 rounded border border-purple-500/50 flex justify-between items-center">
+              <div>
+                <span class="text-purple-300 font-bold">buf[0..3]</span> (16 Heap Bytes)
+                <span class="text-[10px] text-gray-400 block font-mono">Addr: 0x55E28A011240</span>
+              </div>
+              <div class="text-sm font-bold text-purple-300">buf[0] = ${ramState.heapValue !== null ? ramState.heapValue : 'Garbage'}</div>
+            </div>
+          `;
+        }
+      }
+
+      if (heapContainer.innerHTML === '') {
+        heapContainer.innerHTML = '<span class="text-gray-600 italic text-[11px]">Heap segment empty (No active allocations)</span>';
+      }
+    }
+
+    /* ==========================================================================
+       12. INTERACTIVE LAB 2: BITWISE & ENDIANNESS LAB LOGIC
+       ========================================================================== */
+    let currentBitValue = 8080;
+
+    function setBitPreset(val) {
+      currentBitValue = val;
+      document.getElementById('bit-input-val').value = val;
+      renderBitLab();
+    }
+
+    function updateBitLabFromInput() {
+      const val = parseInt(document.getElementById('bit-input-val').value, 10);
+      currentBitValue = isNaN(val) ? 0 : val;
+      renderBitLab();
+    }
+
+    function toggleSingleBit(bitIndex) {
+      currentBitValue = currentBitValue ^ (1U << bitIndex);
+      document.getElementById('bit-input-val').value = currentBitValue;
+      renderBitLab();
+    }
+
+    function renderBitLab() {
+      const container = document.getElementById('bit-grid-container');
+      container.innerHTML = '';
+
+      const unsignedVal = currentBitValue >>> 0;
+      const hexStr = '0x' + unsignedVal.toString(16).padStart(8, '0').toUpperCase();
+      document.getElementById('bit-hex-label').innerText = `Hex: ${hexStr}`;
+
+      for (let i = 31; i >= 0; i--) {
+        const isSet = (unsignedVal & (1 << i)) !== 0;
+        const bitBox = document.createElement('div');
+        bitBox.onclick = () => toggleSingleBit(i);
+        bitBox.className = `p-1 rounded cursor-pointer border select-none transition-all ${
+          isSet ? 'bg-forge-cyan/20 border-forge-cyan text-forge-cyan font-bold' : 'bg-gray-900 border-gray-800 text-gray-600'
+        }`;
+        bitBox.innerHTML = `
+          <div class="text-[9px] text-gray-500">${i}</div>
+          <div>${isSet ? 1 : 0}</div>
+        `;
+        container.appendChild(bitBox);
+      }
+
+      // Render Endianness Bytes
+      const byte0 = (unsignedVal & 0xFF).toString(16).padStart(2, '0').toUpperCase();
+      const byte1 = ((unsignedVal >> 8) & 0xFF).toString(16).padStart(2, '0').toUpperCase();
+      const byte2 = ((unsignedVal >> 16) & 0xFF).toString(16).padStart(2, '0').toUpperCase();
+      const byte3 = ((unsignedVal >> 24) & 0xFF).toString(16).padStart(2, '0').toUpperCase();
+
+      // Host Order (Little-Endian on x86: LSB first -> byte0, byte1, byte2, byte3)
+      document.getElementById('bit-host-bytes').innerHTML = `
+        <span class="bg-gray-900 border border-forge-cyan/50 text-forge-cyan px-2 py-1 rounded font-bold">${byte0}</span>
+        <span class="bg-gray-900 border border-gray-800 text-gray-300 px-2 py-1 rounded">${byte1}</span>
+        <span class="bg-gray-900 border border-gray-800 text-gray-300 px-2 py-1 rounded">${byte2}</span>
+        <span class="bg-gray-900 border border-gray-800 text-gray-300 px-2 py-1 rounded">${byte3}</span>
+      `;
+
+      // Network Order (Big-Endian: MSB first -> byte3, byte2, byte1, byte0)
+      document.getElementById('bit-net-bytes').innerHTML = `
+        <span class="bg-gray-900 border border-forge-emerald/50 text-forge-emerald px-2 py-1 rounded font-bold">${byte3}</span>
+        <span class="bg-gray-900 border border-gray-800 text-gray-300 px-2 py-1 rounded">${byte2}</span>
+        <span class="bg-gray-900 border border-gray-800 text-gray-300 px-2 py-1 rounded">${byte1}</span>
+        <span class="bg-gray-900 border border-gray-800 text-gray-300 px-2 py-1 rounded">${byte0}</span>
+      `;
+    }
+
+    /* ==========================================================================
+       13. DATA BACKUP MODAL & IMPORT/EXPORT
+       ========================================================================== */
+    function openBackupModal() { document.getElementById('modal-backup').classList.remove('hidden'); }
+    function closeBackupModal() { document.getElementById('modal-backup').classList.add('hidden'); }
+
+    function exportProgressJSON() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `C_FORGE_Backup_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importProgressJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const imported = JSON.parse(e.target.result);
+          appState = Object.assign(appState, imported);
+          saveUserData();
+          closeBackupModal();
+          alert("Progress successfully imported!");
+        } catch(err) {
+          alert("Invalid JSON file!");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetAllProgress() {
+      if (confirm("Are you sure you want to reset all progress back to Day 1?")) {
+        appState = {
+          currentDay: 1, completedDays: [], completedRaids: [], xp: 0, streak: 1,
+          lastLoginDate: new Date().toISOString().slice(0, 10), notes: {}, compilerOS: 'gcc'
+        };
+        saveUserData();
+        loadDayWorkspace(1);
+        closeBackupModal();
+      }
+    }
+
+    /* ==========================================================================
+       14. APP INITIALIZATION ON WINDOW LOAD
+       ========================================================================== */
+    window.onload = function() {
+      loadUserData();
+      loadDayWorkspace(appState.currentDay);
+      resetRamLab();
+      renderBitLab();
+      updateTimerDisplay();
+    };
+  </script>
+</body>
+</html>
